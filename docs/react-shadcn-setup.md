@@ -8,6 +8,7 @@ The requested shadcn-style component has been placed at:
 - `components/ui/animated-hero.tsx`
 - `components/ui/animated-hero-demo.tsx`
 - `components/ui/theme-toggle.tsx`
+- `components/ui/theme-toggle-demo.tsx`
 - `components/ui/button.tsx`
 - `components/ui/loader.tsx`
 - `components/ui/loader-demo.tsx`
@@ -28,7 +29,7 @@ npx create-next-app@latest drone2-react --ts --tailwind --eslint --app --src-dir
 cd drone2-react
 npx shadcn@latest init
 npx shadcn@latest add button
-npm install lucide-react framer-motion next-themes clsx tailwind-merge class-variance-authority @radix-ui/react-slot
+npm install lucide-react framer-motion clsx tailwind-merge class-variance-authority @radix-ui/react-slot
 ```
 
 The current `package.json` stays minimal because the deployed site is still a
@@ -61,8 +62,12 @@ router link for that framework or a normal `<a>` element.
 
 `theme-toggle.tsx`
 
-- Requires `next-themes`.
-- Wrap the app in a theme provider before using it:
+- Props: optional `className`.
+- State: local `isDark` state controls the toggle position and icons.
+- Dependencies: `lucide-react` and `cn` from `@/lib/utils`.
+- Context/providers: none required for the included local-state version.
+- To make it control the full app theme in a Next.js app, wire the click handler
+  to `next-themes`:
 
 ```tsx
 "use client"
@@ -78,8 +83,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 }
 ```
 
-Then add the provider to the root layout and place `<ThemeToggle />` in the
-navigation.
+Then install `next-themes`, add the provider to the root layout, and place
+`<ThemeToggle />` in the navigation.
 
 `loader.tsx`
 
