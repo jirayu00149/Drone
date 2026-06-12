@@ -2,6 +2,39 @@
   const page = document.body?.dataset.page || "home";
   const inDroneSection = window.location.pathname.includes("/drone/");
   const base = inDroneSection ? "../" : "./";
+  const themeStorageKey = "hatyai-rescue-theme";
+
+  function storedTheme() {
+    try {
+      return window.localStorage.getItem(themeStorageKey);
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function saveTheme(theme) {
+    try {
+      window.localStorage.setItem(themeStorageKey, theme);
+    } catch (error) {
+      // Theme persistence is optional; the toggle still works for this page.
+    }
+  }
+
+  function preferredTheme() {
+    const savedTheme = storedTheme();
+    if (savedTheme === "dark" || savedTheme === "light") return savedTheme;
+    return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+
+  function applyTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+    const toggle = document.querySelector("[data-theme-toggle]");
+    if (!toggle) return;
+    toggle.setAttribute("aria-label", theme === "dark" ? "Switch to light theme" : "Switch to dark theme");
+    toggle.setAttribute("title", theme === "dark" ? "Light theme" : "Dark theme");
+  }
+
+  applyTheme(preferredTheme());
 
   const items = [
     {
@@ -49,8 +82,23 @@
           `;
         })
         .join("")}
+      <button class="tubelight-nav-link theme-toggle-button" type="button" data-theme-toggle>
+        <span class="tubelight-icon theme-icon" aria-hidden="true">
+          <svg class="theme-icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg>
+          <svg class="theme-icon-moon" viewBox="0 0 24 24"><path d="M21 14.6A8.7 8.7 0 0 1 9.4 3a7 7 0 1 0 11.6 11.6Z" /></svg>
+        </span>
+        <span class="tubelight-label">Theme</span>
+      </button>
     </div>
   `;
 
   document.body.append(nav);
+  applyTheme(document.documentElement.dataset.theme || preferredTheme());
+
+  const themeToggle = nav.querySelector("[data-theme-toggle]");
+  themeToggle?.addEventListener("click", () => {
+    const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    saveTheme(nextTheme);
+    applyTheme(nextTheme);
+  });
 })();

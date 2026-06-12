@@ -24,6 +24,29 @@
     publicStats: document.querySelector("#publicStats")
   };
 
+  function bindAnimatedHero() {
+    const title = document.querySelector(".public-home .hero-content h1");
+    if (!title) return;
+
+    const words = ["drone teams", "case reports", "field logs", "human review"];
+    const wordNode = document.createElement("span");
+    wordNode.className = "hero-rotating-word";
+    wordNode.setAttribute("aria-live", "polite");
+    wordNode.textContent = words[0];
+    title.append(" ", wordNode);
+
+    let activeIndex = 0;
+    window.requestAnimationFrame(() => wordNode.classList.add("is-visible"));
+    window.setInterval(() => {
+      activeIndex = (activeIndex + 1) % words.length;
+      wordNode.classList.remove("is-visible");
+      window.setTimeout(() => {
+        wordNode.textContent = words[activeIndex];
+        wordNode.classList.add("is-visible");
+      }, 160);
+    }, 2400);
+  }
+
   function saveAndRender() {
     R.savePeople(state.people);
     renderStats();
@@ -193,6 +216,7 @@
     });
   }
 
+  bindAnimatedHero();
   bindEvents();
   renderStats();
   renderCases();

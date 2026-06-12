@@ -19,6 +19,61 @@
   --radius: 8px;
 }
 
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f1518;
+  --panel: #172026;
+  --ink: #eef4f5;
+  --muted: #aebdc4;
+  --line: #2d3a40;
+  --soft: #111a1f;
+  --shadow: 0 16px 38px rgba(0, 0, 0, 0.28);
+}
+
+:root[data-theme="dark"] .topbar,
+:root[data-theme="dark"] .panel,
+:root[data-theme="dark"] .notice-card,
+:root[data-theme="dark"] .role-card,
+:root[data-theme="dark"] .stats-strip div,
+:root[data-theme="dark"] .case-card,
+:root[data-theme="dark"] .match-card,
+:root[data-theme="dark"] .command-item,
+:root[data-theme="dark"] .telemetry-grid div {
+  background: var(--panel);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .notice-band,
+:root[data-theme="dark"] .notice-list,
+:root[data-theme="dark"] .help-list,
+:root[data-theme="dark"] .mini-map,
+:root[data-theme="dark"] .camera-empty {
+  background-color: var(--soft);
+  border-color: var(--line);
+}
+
+:root[data-theme="dark"] .nav-link,
+:root[data-theme="dark"] .secondary-button,
+:root[data-theme="dark"] .icon-button,
+:root[data-theme="dark"] .tool-button,
+:root[data-theme="dark"] .filter-button,
+:root[data-theme="dark"] .command-button,
+:root[data-theme="dark"] .small-button,
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] select,
+:root[data-theme="dark"] textarea {
+  background: #10181b;
+  border-color: #3a4a51;
+  color: var(--ink);
+}
+
+:root[data-theme="dark"] .nav-link.active,
+:root[data-theme="dark"] .filter-button.active {
+  background: var(--teal);
+  border-color: var(--teal);
+}
+
 .tubelight-nav {
   position: fixed;
   top: 16px;
@@ -50,7 +105,10 @@
   color: rgba(255, 255, 255, 0.78);
   font-size: 0.82rem;
   font-weight: 800;
+  font-family: inherit;
   text-decoration: none;
+  background: transparent;
+  border: 0;
   transition:
     color 180ms ease,
     background 180ms ease,
@@ -65,6 +123,37 @@
 
 .tubelight-nav-link:hover {
   transform: translateY(-1px);
+}
+
+.theme-toggle-button {
+  appearance: none;
+}
+
+.theme-icon {
+  position: relative;
+}
+
+.theme-icon svg {
+  position: absolute;
+  inset: 0;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.theme-icon-moon {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.45);
+}
+
+:root[data-theme="dark"] .theme-icon-sun {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.45);
+}
+
+:root[data-theme="dark"] .theme-icon-moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
 }
 
 .tubelight-icon {
@@ -422,6 +511,23 @@ body[data-page="report"] .topbar {
   margin-top: 14px;
   color: #dfe9ec;
   font-size: 18px;
+}
+
+.hero-rotating-word {
+  display: inline-block;
+  min-width: 12ch;
+  color: #80d7cf;
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+  white-space: nowrap;
+}
+
+.hero-rotating-word.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .hero-actions {
@@ -1618,6 +1724,12 @@ a:focus-visible {
 
   .hero-content h1 {
     max-width: 330px;
+  }
+
+  .hero-rotating-word {
+    display: block;
+    min-width: 0;
+    white-space: normal;
   }
 
   .hero-content p,

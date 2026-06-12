@@ -50,7 +50,7 @@ npm run pages:deploy
 ## Tubelight navigation
 
 - เว็บ production ตอนนี้ใช้ `tubelight-nav.js` กับ CSS ใน `styles.css`
-- React/shadcn component ที่ขออยู่ที่ `components/ui/tubelight-navbar.tsx`
+- React/shadcn components ที่ขออยู่ใน `components/ui/`
 - รายละเอียดการ migrate เป็น React + Tailwind + TypeScript อยู่ใน `docs/react-shadcn-setup.md`
 
 ## Supabase database
