@@ -1,0 +1,3 @@
+/drone /drone/index.html 200
+/admin /drone/index.html 302
+/pilot /drone/index.html 302

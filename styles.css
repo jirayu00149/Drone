@@ -19,6 +19,145 @@
   --radius: 8px;
 }
 
+.tubelight-nav {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  z-index: 70;
+  transform: translateX(-50%);
+}
+
+.tubelight-nav-inner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(8, 13, 22, 0.48);
+  box-shadow: 0 18px 44px rgba(1, 9, 20, 0.26);
+  backdrop-filter: blur(18px);
+}
+
+.tubelight-nav-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 18px;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    transform 180ms ease;
+}
+
+.tubelight-nav-link:hover,
+.tubelight-nav-link.active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.11);
+}
+
+.tubelight-nav-link:hover {
+  transform: translateY(-1px);
+}
+
+.tubelight-icon {
+  display: none;
+  width: 19px;
+  height: 19px;
+}
+
+.tubelight-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tubelight-lamp {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  width: 34px;
+  height: 4px;
+  border-radius: 999px 999px 0 0;
+  background: #36d399;
+  box-shadow: 0 0 22px rgba(54, 211, 153, 0.72);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.tubelight-lamp i,
+.tubelight-lamp b,
+.tubelight-lamp em {
+  position: absolute;
+  left: 50%;
+  display: block;
+  border-radius: 999px;
+  background: rgba(54, 211, 153, 0.24);
+  filter: blur(8px);
+  transform: translateX(-50%);
+}
+
+.tubelight-lamp i {
+  top: -7px;
+  width: 52px;
+  height: 20px;
+}
+
+.tubelight-lamp b {
+  top: -2px;
+  width: 35px;
+  height: 17px;
+}
+
+.tubelight-lamp em {
+  top: 1px;
+  width: 18px;
+  height: 12px;
+}
+
+@media (max-width: 720px) {
+  .tubelight-nav {
+    top: auto;
+    bottom: max(14px, env(safe-area-inset-bottom));
+  }
+
+  .tubelight-nav-inner {
+    gap: 4px;
+    padding: 5px;
+  }
+
+  .tubelight-nav-link {
+    width: 46px;
+    min-height: 42px;
+    padding: 0;
+  }
+
+  .tubelight-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .tubelight-icon {
+    display: block;
+  }
+}
+
 * {
   box-sizing: border-box;
 }

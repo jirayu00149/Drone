@@ -30,6 +30,29 @@
 - Start command: `yarn start`
 - Server จะอ่าน `PORT` จาก host เช่น Render และ bind ที่ `0.0.0.0`
 
+## Deploy บน Cloudflare Pages
+
+Cloudflare Pages เหมาะกับโปรเจกต์นี้กว่า Render เพราะเว็บเป็น static site และไม่มี server ที่ต้องรอ wake up:
+
+- Build command: `npm run build`
+- Build output directory: `dist`
+- Root directory: เว้นว่าง
+- Production branch: `master`
+
+รัน deploy จากเครื่องนี้ได้ด้วย:
+
+```bash
+npm run pages:deploy
+```
+
+สคริปต์ build จะ copy เฉพาะไฟล์เว็บลง `dist/` เพื่อไม่เผยแพร่ไฟล์ setup/database ภายในโปรเจกต์
+
+## Tubelight navigation
+
+- เว็บ production ตอนนี้ใช้ `tubelight-nav.js` กับ CSS ใน `styles.css`
+- React/shadcn component ที่ขออยู่ที่ `components/ui/tubelight-navbar.tsx`
+- รายละเอียดการ migrate เป็น React + Tailwind + TypeScript อยู่ใน `docs/react-shadcn-setup.md`
+
 ## Supabase database
 
 เริ่มเพิ่มฐานข้อมูล Supabase แล้วใน `supabase/`:
