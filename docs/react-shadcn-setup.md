@@ -55,10 +55,13 @@ router link for that framework or a normal `<a>` element.
 
 `animated-hero.tsx`
 
-- Props: `eyebrow`, `title`, `words`, `description`, `primaryAction`,
-  `secondaryAction`, and `className`.
-- State: rotates the active word with `useState` and `useEffect`.
+- Exports: `Hero`.
+- Props: none in the included version.
+- State: local `titleNumber` state rotates the active title with `useState`,
+  `useMemo`, and `useEffect`.
 - Dependencies: `framer-motion`, `lucide-react`, and `Button`.
+- Tailwind note: the sample uses `text-spektr-cyan-50`. Add that color to the
+  Tailwind theme or replace it with a project token such as `text-foreground`.
 
 `theme-toggle.tsx`
 

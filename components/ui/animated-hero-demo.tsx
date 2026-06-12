@@ -1,12 +1,11 @@
-import { AnimatedHero } from "@/components/ui/animated-hero"
+import { Hero } from "@/components/ui/animated-hero"
 
-export function AnimatedHeroDemo() {
+function HeroDemo() {
   return (
-    <AnimatedHero
-      title="Coordinate rescue work with"
-      words={["drone teams", "case reports", "field logs", "human review"]}
-      primaryAction={{ label: "Open Drone Ops", href: "/drone/" }}
-      secondaryAction={{ label: "Report missing person", href: "/report.html" }}
-    />
+    <div className="block">
+      <Hero />
+    </div>
   )
 }
+
+export { HeroDemo }
