@@ -2,7 +2,17 @@
   const page = document.body?.dataset.page || "home";
   const inDroneSection = window.location.pathname.includes("/drone/");
   const base = inDroneSection ? "../" : "./";
+  const siteConfig = window.HatyaiRescueConfig || {};
+  const publicBase = siteConfig.publicBaseUrl || base;
+  const droneBase = siteConfig.droneBaseUrl || (inDroneSection ? "./" : `${base}drone/`);
   const themeStorageKey = "hatyai-rescue-theme";
+
+  function joinUrl(baseUrl, path) {
+    if (/^https?:\/\//i.test(baseUrl)) {
+      return `${baseUrl.replace(/\/$/, "")}/${path.replace(/^\.\//, "")}`;
+    }
+    return `${baseUrl}${path}`;
+  }
 
   function storedTheme() {
     try {
@@ -40,25 +50,25 @@
     {
       key: "home",
       label: "หน้าแรก",
-      href: `${base}index.html`,
+      href: joinUrl(publicBase, "index.html"),
       icon: '<path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3V10.5Z" />'
     },
     {
       key: "search",
       label: "ตรวจรายชื่อ",
-      href: `${base}search.html`,
+      href: joinUrl(publicBase, "search.html"),
       icon: '<circle cx="11" cy="11" r="7" /><path d="m16 16 5 5" />'
     },
     {
       key: "report",
       label: "แจ้งผู้สูญหาย",
-      href: `${base}report.html`,
+      href: joinUrl(publicBase, "report.html"),
       icon: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z" /><path d="M14 3v6h6M8 13h8M8 17h5" />'
     },
     {
       key: "drone",
       label: "Drone Ops",
-      href: `${base}drone/`,
+      href: droneBase,
       icon: '<path d="M10 10h4v4h-4z" /><path d="M4 4h4v4H4zM16 4h4v4h-4zM4 16h4v4H4zM16 16h4v4h-4zM8 6h8M8 18h8M6 8v8M18 8v8" />'
     }
   ];

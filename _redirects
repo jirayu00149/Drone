@@ -1,3 +1,6 @@
-/drone /drone/index.html 200
-/admin /drone/index.html 302
-/pilot /drone/index.html 302
+/drone https://autokgapai-drone.pages.dev/ 302
+/drone/* https://autokgapai-drone.pages.dev/:splat 302
+/admin https://autokgapai-drone.pages.dev/ 302
+/pilot https://autokgapai-drone.pages.dev/ 302
+/admin.html https://autokgapai-drone.pages.dev/ 302
+/pilot.html https://autokgapai-drone.pages.dev/ 302

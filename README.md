@@ -47,6 +47,42 @@ npm run pages:deploy
 
 สคริปต์ build จะ copy เฉพาะไฟล์เว็บลง `dist/` เพื่อไม่เผยแพร่ไฟล์ setup/database ภายในโปรเจกต์
 
+## Split deploy targets
+
+The repository now builds two static websites from one codebase:
+
+- Public site: `dist/`, deployed to Cloudflare Pages project `autokgapai`.
+- Drone Ops site: `dist-drone/`, deployed to Cloudflare Pages project
+  `autokgapai-drone`.
+
+Build commands:
+
+```bash
+npm run build:public
+npm run build:drone
+npm run build
+```
+
+Deploy commands:
+
+```bash
+npm run pages:deploy
+npm run pages:deploy:drone
+```
+
+Set these environment variables on both Cloudflare Pages projects so the two
+websites point at each other and the same Supabase project:
+
+```text
+PUBLIC_SITE_URL=https://autokgapai.pages.dev
+DRONE_SITE_URL=https://autokgapai-drone.pages.dev
+SUPABASE_URL=
+SUPABASE_PUBLISHABLE_KEY=
+```
+
+Do not put `SUPABASE_SERVICE_ROLE_KEY` in either static site. It must stay on a
+trusted backend only.
+
 ## Tubelight navigation
 
 - เว็บ production ตอนนี้ใช้ `tubelight-nav.js` กับ CSS ใน `styles.css`

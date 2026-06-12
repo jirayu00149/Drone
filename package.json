@@ -4,8 +4,12 @@
   "private": true,
   "description": "Static web server for the Hatyai Drone Rescue prototype.",
   "scripts": {
-    "build": "node scripts/build-static.js",
-    "pages:deploy": "npm run build && wrangler pages deploy dist --project-name autokgapai --branch master",
+    "build": "node scripts/build-static.js all",
+    "build:public": "node scripts/build-static.js public",
+    "build:drone": "node scripts/build-static.js drone",
+    "pages:deploy": "npm run build:public && wrangler pages deploy dist --project-name autokgapai --branch master",
+    "pages:deploy:drone": "npm run build:drone && wrangler pages deploy dist-drone --project-name autokgapai-drone --branch master",
+    "pages:deploy:all": "npm run pages:deploy && npm run pages:deploy:drone",
     "start": "node server.js"
   },
   "engines": {

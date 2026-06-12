@@ -56,6 +56,23 @@ SUPABASE_DB_URL=
 `SUPABASE_PUBLISHABLE_KEY` can be used by browser code. `SUPABASE_SERVICE_ROLE_KEY`
 must stay server-side only.
 
+## Two websites, one database
+
+The public website and Drone Ops website are built as separate Cloudflare Pages
+projects, but they should use the same Supabase project:
+
+- Public site build output: `dist/`.
+- Drone Ops build output: `dist-drone/`.
+- Set the same `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` on both Pages
+  projects.
+- Set `PUBLIC_SITE_URL` and `DRONE_SITE_URL` on both Pages projects so the
+  navigation can link across domains.
+
+Because these are separate domains, browser `localStorage` will not be shared.
+The current prototype still uses `localStorage` for demo data, so the next
+production step is to move reads/writes from `shared.js`, `public.js`, and
+`admin.js` to Supabase or to a trusted backend API that talks to Supabase.
+
 ## Notes
 
 - Supabase CLI is not installed on this machine yet, so this is a SQL setup
