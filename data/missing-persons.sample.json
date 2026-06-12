@@ -1,0 +1,20 @@
+[
+  {
+    "id": "HY-001",
+    "name": "นางมาลี ใจดี",
+    "age": 72,
+    "priority": "high",
+    "lastSeen": "ชุมชนคลองเตย ใกล้คลองอู่ตะเภา",
+    "reporterContact": "ญาติผู้แจ้ง 08x-xxx-1001",
+    "status": "searching"
+  },
+  {
+    "id": "HY-022",
+    "name": "เด็กหญิงอารีนา",
+    "age": 10,
+    "priority": "high",
+    "lastSeen": "ชุมชนริมทางรถไฟหาดใหญ่",
+    "reporterContact": "ผู้ปกครอง 08x-xxx-1022",
+    "status": "searching"
+  }
+]

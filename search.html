@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ตรวจรายชื่อ | Hatyai Drone Rescue</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-page="search">
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="Hatyai Drone Rescue">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>
+          <strong>Hatyai Drone Rescue</strong>
+          <small>ตรวจสอบรายชื่อและสถานะผู้สูญหาย</small>
+        </span>
+      </a>
+      <nav class="nav-actions" aria-label="เมนูหลัก">
+        <a class="nav-link" href="./index.html">หน้าแรก</a>
+        <a class="nav-link active" href="./search.html">ตรวจรายชื่อ</a>
+        <a class="nav-link" href="./report.html">แจ้งผู้สูญหาย</a>
+      </nav>
+    </header>
+
+    <main class="page-shell">
+      <section class="intro-panel search-intro" aria-labelledby="searchIntroTitle">
+        <div>
+          <span class="eyebrow red">ตรวจสอบสถานะ</span>
+          <h1 id="searchIntroTitle">รายชื่อผู้สูญหาย</h1>
+          <p>ค้นหาด้วยชื่อ รหัสเคส หรือพื้นที่พบล่าสุด หากยังไม่มีข้อมูลในระบบให้ส่งข้อมูลใหม่ที่หน้าแจ้งผู้สูญหาย</p>
+        </div>
+        <a class="secondary-button" href="./report.html">แจ้งผู้สูญหาย</a>
+      </section>
+
+      <section class="panel status-panel" aria-labelledby="statusTitle">
+        <div class="panel-header">
+          <div>
+            <h2 id="statusTitle">รายการเคส</h2>
+            <p>สถานะจะเปลี่ยนเมื่อทีมปฏิบัติการยืนยันผลจากภาคสนามหรือระบบโดรน</p>
+          </div>
+          <button class="icon-button" id="resetDemoBtn" type="button" title="รีเซ็ตข้อมูลตัวอย่าง" aria-label="รีเซ็ตข้อมูลตัวอย่าง">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.34-5.66M4 4v6h6" /></svg>
+          </button>
+        </div>
+
+        <div class="search-tools">
+          <label class="search-box">
+            <span>ค้นหา</span>
+            <input id="caseSearch" autocomplete="off" placeholder="เช่น มาลี, HY-001, คลองอู่ตะเภา" />
+          </label>
+          <div class="filter-row" aria-label="ตัวกรองสถานะ">
+            <button class="filter-button active" type="button" data-filter="all">ทั้งหมด</button>
+            <button class="filter-button" type="button" data-filter="searching">กำลังค้นหา</button>
+            <button class="filter-button" type="button" data-filter="review">รอยืนยัน</button>
+            <button class="filter-button" type="button" data-filter="found">พบแล้ว</button>
+          </div>
+        </div>
+
+        <div class="stats-strip compact-stats" id="publicStats" aria-live="polite"></div>
+        <div class="case-list" id="caseList" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer class="footer-note">
+      <span>ใช้ข้อมูลอย่างระมัดระวัง</span>
+      <span>รูปใบหน้าและพิกัดควรใช้เพื่อภารกิจค้นหาเท่านั้น</span>
+    </footer>
+
+    <script src="./shared.js"></script>
+    <script src="./public.js"></script>
+  </body>
+</html>

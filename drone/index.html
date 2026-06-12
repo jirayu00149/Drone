@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Drone Ops | Hatyai Drone Rescue</title>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="./drone.css" />
+  </head>
+  <body data-page="drone" class="drone-site">
+    <header class="drone-topbar">
+      <a class="drone-brand" href="./index.html" aria-label="Drone Ops">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>
+          <strong>Drone Ops</strong>
+          <small>ระบบปฏิบัติการโดรนสำหรับตรวจสอบใบหน้า</small>
+        </span>
+      </a>
+      <nav class="drone-nav" aria-label="เมนูเว็บโดรน">
+        <a class="drone-nav-link" href="../index.html">เว็บประชาชน</a>
+        <a class="drone-nav-link" href="../search.html">ตรวจรายชื่อ</a>
+        <a class="drone-nav-link active" href="./index.html">ห้องควบคุมโดรน</a>
+      </nav>
+    </header>
+
+    <main class="drone-shell">
+      <section class="drone-hero" aria-labelledby="droneHeroTitle">
+        <div>
+          <span class="eyebrow">Connected Face Check</span>
+          <h1 id="droneHeroTitle">ห้องควบคุมโดรน</h1>
+          <p>เว็บนี้แยกจากเว็บประชาชน แต่เชื่อมข้อมูลผู้สูญหายชุดเดียวกันเพื่อสแกนใบหน้า บันทึกพิกัด และส่งสถานะกลับไปยังหน้าตรวจรายชื่อ</p>
+        </div>
+        <div class="drone-connection">
+          <span>เชื่อมต่อข้อมูล</span>
+          <strong id="missionCount">0 เคสที่ต้องติดตาม</strong>
+          <small id="lastSync">อัปเดตล่าสุด -</small>
+        </div>
+      </section>
+
+      <section class="drone-grid">
+        <section class="panel camera-panel" aria-labelledby="cameraTitle">
+          <div class="panel-header compact-header">
+            <div>
+              <h2 id="cameraTitle">กล้องตรวจใบหน้า</h2>
+              <p>เปิดกล้อง อัปโหลดภาพ หรือใช้เฟรมจำลองเพื่อเทียบกับรูปจากหน้าแจ้งผู้สูญหาย</p>
+            </div>
+            <span class="scan-status" id="scanStatus">พร้อมสแกน</span>
+          </div>
+
+          <div class="camera-frame">
+            <video id="cameraVideo" playsinline muted autoplay></video>
+            <canvas id="frameCanvas" width="960" height="540"></canvas>
+            <div class="camera-empty" id="cameraEmpty">
+              <strong>Drone feed standby</strong>
+              <span>เปิดกล้อง อัปโหลดภาพ หรือใช้เฟรมจำลอง</span>
+            </div>
+            <div class="face-guide" aria-hidden="true"><span></span></div>
+          </div>
+
+          <div class="toolbar">
+            <button class="tool-button" id="startCameraBtn" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l2-2h4l2 2h4v12H4V7Z" /><circle cx="12" cy="13" r="4" /></svg>
+              เปิดกล้อง
+            </button>
+            <button class="tool-button" id="captureBtn" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M6 6h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" /></svg>
+              จับภาพ
+            </button>
+            <button class="tool-button" id="demoFrameBtn" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4V5Zm3 10 3-4 3 3 2-2 2 3" /></svg>
+              เฟรมจำลอง
+            </button>
+            <label class="tool-button file-tool">
+              <input id="probeUpload" type="file" accept="image/*" />
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0-12 4 4m-4-4-4 4M5 17v3h14v-3" /></svg>
+              อัปโหลด
+            </label>
+          </div>
+        </section>
+
+        <aside class="panel drone-panel" aria-labelledby="droneTitle">
+          <div class="panel-header compact-header">
+            <div>
+              <h2 id="droneTitle">สถานะโดรน</h2>
+              <p>HY-DRONE-01</p>
+            </div>
+            <span class="status-chip good" id="droneOnline">ออนไลน์</span>
+          </div>
+
+          <div class="telemetry-grid">
+            <div>
+              <span>Battery</span>
+              <strong id="batteryValue">86%</strong>
+            </div>
+            <div>
+              <span>Signal</span>
+              <strong id="signalValue">92%</strong>
+            </div>
+            <div>
+              <span>Altitude</span>
+              <strong id="altitudeValue">42 m</strong>
+            </div>
+            <div>
+              <span>Mode</span>
+              <strong id="modeValue">Patrol</strong>
+            </div>
+          </div>
+
+          <div class="location-box">
+            <label>
+              <span>Lat</span>
+              <input id="latInput" value="7.008600" inputmode="decimal" />
+            </label>
+            <label>
+              <span>Lng</span>
+              <input id="lngInput" value="100.474700" inputmode="decimal" />
+            </label>
+            <button class="icon-button" id="gpsBtn" type="button" title="ใช้พิกัดอุปกรณ์" aria-label="ใช้พิกัดอุปกรณ์">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" /></svg>
+            </button>
+          </div>
+
+          <div class="command-grid" aria-label="คำสั่งโดรน">
+            <button class="command-button" type="button" data-command="เริ่มลาดตระเวน">ลาดตระเวน</button>
+            <button class="command-button" type="button" data-command="หยุดนิ่งเหนือจุดพบ">หยุดนิ่ง</button>
+            <button class="command-button" type="button" data-command="กลับฐาน">กลับฐาน</button>
+            <button class="command-button danger" type="button" data-command="ลงจอดฉุกเฉิน">ลงจอด</button>
+          </div>
+
+          <div class="command-log" id="commandLog" aria-live="polite"></div>
+        </aside>
+
+        <section class="panel match-panel" aria-labelledby="matchTitle">
+          <div class="panel-header compact-header">
+            <div>
+              <h2 id="matchTitle">ผลตรวจใบหน้า</h2>
+              <p>AI เสนอ candidate เท่านั้น เจ้าหน้าที่ต้องยืนยันก่อนส่งสถานะกลับเว็บประชาชน</p>
+            </div>
+            <div class="threshold-row">
+              <label for="thresholdRange">Threshold</label>
+              <input id="thresholdRange" type="range" min="40" max="98" value="60" />
+              <output id="thresholdValue">60%</output>
+            </div>
+          </div>
+
+          <div class="match-results" id="matchResults" aria-live="polite">
+            <div class="empty-note">ยังไม่มีผลตรวจจากกล้อง</div>
+          </div>
+        </section>
+
+        <section class="panel ops-panel" aria-labelledby="opsTitle">
+          <div class="panel-header compact-header">
+            <div>
+              <h2 id="opsTitle">เคสและพิกัดพบ</h2>
+              <p>เมื่อยืนยันแล้ว หน้าเว็บประชาชนจะเห็นสถานะและพิกัดล่าสุดทันที</p>
+            </div>
+            <button class="icon-button" id="exportBtn" type="button" title="ส่งออก CSV" aria-label="ส่งออก CSV">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0-12 4 4m-4-4-4 4M5 17v3h14v-3" /></svg>
+            </button>
+          </div>
+
+          <div class="mini-map" aria-label="แผนที่จำลองหาดใหญ่">
+            <div class="water water-a"></div>
+            <div class="water water-b"></div>
+            <div class="road road-a"></div>
+            <div class="road road-b"></div>
+            <div class="district district-a">คลองอู่ตะเภา</div>
+            <div class="district district-b">ตลาด/ย่านเศรษฐกิจ</div>
+            <div class="district district-c">ศูนย์กู้ภัย</div>
+            <div class="map-pins" id="mapPins"></div>
+          </div>
+
+          <div class="case-list compact-list" id="adminCaseList" aria-live="polite"></div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="drone-footer">
+      <span>Human-in-the-loop</span>
+      <span>ใช้เพื่อเสนอ candidate และประสานงานค้นหาเท่านั้น</span>
+    </footer>
+
+    <script src="../shared.js"></script>
+    <script src="../admin.js"></script>
+  </body>
+</html>

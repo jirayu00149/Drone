@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>แจ้งผู้สูญหาย | Hatyai Drone Rescue</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-page="report">
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="Hatyai Drone Rescue">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>
+          <strong>Hatyai Drone Rescue</strong>
+          <small>ส่งข้อมูลผู้สูญหายเข้าศูนย์ประสานงาน</small>
+        </span>
+      </a>
+      <nav class="nav-actions" aria-label="เมนูหลัก">
+        <a class="nav-link" href="./index.html">หน้าแรก</a>
+        <a class="nav-link" href="./search.html">ตรวจรายชื่อ</a>
+        <a class="nav-link active" href="./report.html">แจ้งผู้สูญหาย</a>
+      </nav>
+    </header>
+
+    <main class="public-layout report-layout">
+      <section class="panel report-panel" aria-labelledby="reportTitle">
+        <div class="panel-header">
+          <div>
+            <h1 id="reportTitle">แจ้งผู้สูญหาย</h1>
+            <p>กรอกข้อมูลจากญาติหรือผู้พบเห็น ระบบจะส่งเข้าคิวให้ทีมช่วยเหลือและระบบโดรนตรวจสอบใบหน้า</p>
+          </div>
+          <span class="status-chip">PDPA: ใช้เพื่อกู้ภัยเท่านั้น</span>
+        </div>
+
+        <form class="form-grid" id="missingForm">
+          <label>
+            <span>ชื่อผู้สูญหายหรือรหัสที่ต้องการใช้</span>
+            <input id="personName" autocomplete="off" required placeholder="เช่น นางมาลี / HY-021" />
+          </label>
+
+          <div class="two-col">
+            <label>
+              <span>อายุ</span>
+              <input id="personAge" min="1" max="110" type="number" placeholder="72" />
+            </label>
+            <label>
+              <span>ความเร่งด่วน</span>
+              <select id="personPriority">
+                <option value="high">สูง: เด็ก ผู้สูงอายุ ผู้ป่วย</option>
+                <option value="medium">กลาง: ติดต่อไม่ได้</option>
+                <option value="standard">ปกติ: ต้องการติดตาม</option>
+              </select>
+            </label>
+          </div>
+
+          <label>
+            <span>พื้นที่ที่พบล่าสุด</span>
+            <input id="personLastSeen" autocomplete="off" placeholder="เช่น คลองเตย, คลองอู่ตะเภา, ตลาดกิมหยง" />
+          </label>
+
+          <label>
+            <span>ผู้แจ้ง / เบอร์ติดต่อ</span>
+            <input id="reporterContact" autocomplete="off" placeholder="ชื่อผู้แจ้งและเบอร์โทร" />
+          </label>
+
+          <label>
+            <span>รายละเอียดเพิ่มเติม</span>
+            <textarea id="personNote" rows="4" placeholder="เสื้อผ้า จุดนัดหมาย โรคประจำตัว หรือข้อควรระวัง"></textarea>
+          </label>
+
+          <label class="file-control">
+            <input id="personPhoto" type="file" accept="image/*" />
+            <span>เพิ่มรูปใบหน้าอ้างอิง</span>
+          </label>
+
+          <button class="primary-button" type="submit">ส่งข้อมูลให้ศูนย์กู้ภัย</button>
+          <div class="form-message" id="formMessage" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <aside class="panel side-help" aria-labelledby="helpTitle">
+        <div class="panel-header compact-header">
+          <div>
+            <h2 id="helpTitle">ข้อมูลที่ช่วยให้ค้นหาเร็วขึ้น</h2>
+            <p>กรอกเท่าที่ทราบ หากไม่แน่ใจให้เว้นไว้ก่อน</p>
+          </div>
+        </div>
+        <ul class="help-list">
+          <li>รูปใบหน้าล่าสุดหรือรูปที่เห็นชัด</li>
+          <li>สถานที่และเวลาที่พบล่าสุด</li>
+          <li>เสื้อผ้า จุดสังเกต โรคประจำตัว</li>
+          <li>เบอร์ติดต่อที่รับสายได้ตลอดภารกิจ</li>
+        </ul>
+        <a class="secondary-button full-button" href="./search.html">ตรวจสถานะหลังแจ้ง</a>
+      </aside>
+    </main>
+
+    <footer class="footer-note">
+      <span>ต้นแบบเพื่อการช่วยเหลือ</span>
+      <span>ข้อมูลควรถูกลบหลังจบภารกิจในระบบจริง</span>
+    </footer>
+
+    <script src="./shared.js"></script>
+    <script src="./public.js"></script>
+  </body>
+</html>
