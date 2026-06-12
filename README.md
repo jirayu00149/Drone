@@ -22,6 +22,24 @@
 - แจ้งผู้สูญหาย: `http://127.0.0.1:4174/report.html`
 - Drone Ops: `http://127.0.0.1:4174/drone/index.html`
 
+## Deploy เป็น Web Service
+
+โปรเจกต์มี `package.json` แล้ว จึง deploy เป็น Node web service ได้:
+
+- Build command: เว้นว่างไว้ หรือใช้ `yarn install`
+- Start command: `yarn start`
+- Server จะอ่าน `PORT` จาก host เช่น Render และ bind ที่ `0.0.0.0`
+
+## Supabase database
+
+เริ่มเพิ่มฐานข้อมูล Supabase แล้วใน `supabase/`:
+
+- `supabase/setup.sql` สร้างตาราง, indexes, RLS policies, grants และ private Storage buckets
+- `supabase/seed.sql` เพิ่มข้อมูล demo ชุดเดียวกับ prototype
+- `docs/supabase-database.md` อธิบายขั้นตอนนำ SQL ไป run ใน Supabase SQL Editor
+
+โปรเจกต์หน้าเว็บยังใช้ `localStorage` อยู่เพื่อให้ demo เดิมเปิดได้ทันที ขั้นถัดไปคือเพิ่ม backend API/ Supabase client เพื่อย้ายการอ่านเขียนข้อมูลจริงออกจาก browser storage
+
 ## Flow
 
 1. ประชาชนเข้า `search.html` เพื่อตรวจรายชื่อและสถานะ

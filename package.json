@@ -1,0 +1,12 @@
+{
+  "name": "hatyai-drone-rescue-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static web server for the Hatyai Drone Rescue prototype.",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

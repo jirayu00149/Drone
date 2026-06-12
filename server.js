@@ -4,6 +4,8 @@ const path = require("path");
 const { URL } = require("url");
 
 const root = __dirname;
+const host = process.env.HOST || "0.0.0.0";
+const port = Number(process.env.PORT) || 4173;
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -18,7 +20,7 @@ const mimeTypes = {
 
 function createServer() {
   return http.createServer((request, response) => {
-    const requestUrl = new URL(request.url, "http://127.0.0.1");
+    const requestUrl = new URL(request.url, `http://${request.headers.host || "127.0.0.1"}`);
     const requestedPath =
       requestUrl.pathname === "/"
         ? "/index.html"
@@ -52,15 +54,16 @@ function createServer() {
 function listen(port) {
   const server = createServer();
   server.on("error", (error) => {
-    if (error.code === "EADDRINUSE") {
+    if (error.code === "EADDRINUSE" && !process.env.PORT) {
       listen(port + 1);
       return;
     }
     throw error;
   });
-  server.listen(port, "127.0.0.1", () => {
-    console.log(`Hatyai Drone Rescue AI running at http://127.0.0.1:${port}`);
+  server.listen(port, host, () => {
+    const displayHost = host === "0.0.0.0" ? "127.0.0.1" : host;
+    console.log(`Hatyai Drone Rescue AI running at http://${displayHost}:${port}`);
   });
 }
 
-listen(Number(process.env.PORT) || 4173);
+listen(port);
