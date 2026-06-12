@@ -9,6 +9,8 @@ The requested shadcn-style component has been placed at:
 - `components/ui/animated-hero-demo.tsx`
 - `components/ui/theme-toggle.tsx`
 - `components/ui/button.tsx`
+- `components/ui/loader.tsx`
+- `components/ui/loader-demo.tsx`
 - `components/ui/tubelight-navbar.tsx`
 - `components/ui/tubelight-navbar-demo.tsx`
 - `lib/utils.ts`
@@ -78,6 +80,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
 Then add the provider to the root layout and place `<ThemeToggle />` in the
 navigation.
+
+`loader.tsx`
+
+- Props: accepts normal `div` attributes plus optional `size`.
+- State/context: none.
+- Dependencies: `cn` from `@/lib/utils` and Tailwind's built-in
+  `animate-spin` utility.
+- Assets: none; the spinner is inline SVG.
 
 Current production path:
 
