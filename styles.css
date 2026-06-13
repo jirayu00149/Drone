@@ -125,35 +125,105 @@
   transform: translateY(-1px);
 }
 
-.theme-toggle-button {
+.theme-switch {
+  width: 64px;
+  height: 32px;
+  flex: 0 0 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  border: 1px solid #e4e4e7;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #18181b;
   appearance: none;
-}
-
-.theme-icon {
-  position: relative;
-}
-
-.theme-icon svg {
-  position: absolute;
-  inset: 0;
+  box-shadow: 0 8px 20px rgba(1, 9, 20, 0.12);
   transition:
-    opacity 180ms ease,
+    background 220ms ease,
+    border-color 220ms ease,
     transform 180ms ease;
 }
 
-.theme-icon-moon {
-  opacity: 0;
-  transform: rotate(90deg) scale(0.45);
+.theme-switch:hover {
+  transform: translateY(-1px);
 }
 
-:root[data-theme="dark"] .theme-icon-sun {
-  opacity: 0;
-  transform: rotate(-90deg) scale(0.45);
+.floating-theme-control {
+  position: fixed;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 90;
 }
 
-:root[data-theme="dark"] .theme-icon-moon {
-  opacity: 1;
-  transform: rotate(0deg) scale(1);
+.theme-switch-stage {
+  width: 56px;
+  height: 24px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.theme-switch-thumb {
+  width: 24px;
+  height: 24px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  border-radius: 999px;
+  background: #e5e7eb;
+  transform: translateX(32px);
+  transition:
+    background 260ms ease,
+    transform 260ms ease;
+}
+
+.theme-switch-slot {
+  width: 24px;
+  height: 24px;
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  transition:
+    color 220ms ease,
+    transform 220ms ease;
+}
+
+.theme-switch-slot svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.8;
+}
+
+.theme-switch-moon {
+  color: #09090b;
+}
+
+.theme-switch-sun {
+  color: #374151;
+}
+
+:root[data-theme="dark"] .theme-switch {
+  background: #09090b;
+  border-color: #27272a;
+  color: #ffffff;
+}
+
+:root[data-theme="dark"] .theme-switch-thumb {
+  background: #27272a;
+  transform: translateX(0);
+}
+
+:root[data-theme="dark"] .theme-switch-moon {
+  color: #ffffff;
+}
+
+:root[data-theme="dark"] .theme-switch-sun {
+  color: #71717a;
 }
 
 .tubelight-icon {
@@ -231,6 +301,19 @@
     width: 46px;
     min-height: 42px;
     padding: 0;
+  }
+
+  .tubelight-nav .theme-switch {
+    width: 62px;
+    height: 34px;
+  }
+
+  .floating-theme-control {
+    bottom: max(76px, env(safe-area-inset-bottom));
+  }
+
+  body[data-page="drone"] .floating-theme-control {
+    bottom: max(18px, env(safe-area-inset-bottom));
   }
 
   .tubelight-label {
@@ -537,6 +620,37 @@ body[data-page="report"] .topbar {
   margin-top: 24px;
 }
 
+.hero-metrics {
+  width: min(100%, 680px);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.hero-metrics div {
+  min-height: 82px;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.hero-metrics strong {
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.hero-metrics span {
+  color: #d7e4e7;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
 .eyebrow {
   display: inline-flex;
   align-items: center;
@@ -671,7 +785,7 @@ body[data-page="report"] .topbar {
 }
 
 .role-section {
-  padding: 38px 0 18px;
+  padding: 38px 0 28px;
 }
 
 .section-heading {
@@ -905,6 +1019,19 @@ body[data-page="report"] .topbar {
   padding: 5px 10px;
   white-space: nowrap;
   font-size: 13px;
+  font-weight: 800;
+}
+
+.status-chip {
+  background: #eef6f5;
+  border-color: #b8d7d3;
+  color: #064b46;
+}
+
+.privacy-chip {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #ffffff;
 }
 
 .status-chip.good,
@@ -925,6 +1052,18 @@ body[data-page="report"] .topbar {
   background: var(--amber-bg);
   border-color: #efc66a;
   color: #704200;
+}
+
+:root[data-theme="dark"] .status-chip {
+  background: #14302d;
+  border-color: #2b6c65;
+  color: #d9fffb;
+}
+
+:root[data-theme="dark"] .privacy-chip {
+  background: #20a397;
+  border-color: #36c2b6;
+  color: #061312;
 }
 
 .form-grid {
@@ -1767,6 +1906,7 @@ a:focus-visible {
   }
 
   .two-col,
+  .hero-metrics,
   .filter-row,
   .stats-strip,
   .telemetry-grid,

@@ -7,7 +7,25 @@
     <link rel="stylesheet" href="../styles.css" />
     <link rel="stylesheet" href="./drone.css" />
   </head>
-  <body data-page="drone" class="drone-site">
+  <body data-page="drone" class="drone-site is-access-locked">
+    <main class="access-gate" data-access-gate aria-labelledby="accessTitle">
+      <section class="access-panel">
+        <span class="eyebrow">Protected Drone Ops</span>
+        <h1 id="accessTitle">เข้าสู่ห้องควบคุมโดรน</h1>
+        <p>พื้นที่นี้สำหรับทีมปฏิบัติการเท่านั้น ใช้ passcode เพื่อเปิดหน้าสแกนภาพและบันทึกพิกัดภารกิจ</p>
+        <form class="access-form" id="accessForm">
+          <label>
+            <span>Passcode</span>
+            <input id="accessCode" type="password" autocomplete="current-password" placeholder="ใส่รหัสทีมโดรน" />
+          </label>
+          <button class="primary-button" type="submit">เข้าสู่ Drone Ops</button>
+          <p class="access-message" id="accessMessage" aria-live="polite"></p>
+        </form>
+        <small>Production ควรล็อกด้วย Cloudflare Access อีกชั้นก่อนถึงหน้าเว็บนี้</small>
+      </section>
+    </main>
+
+    <div class="drone-app-shell" data-drone-app hidden aria-hidden="true">
     <header class="drone-topbar">
       <a class="drone-brand" href="./index.html" aria-label="Drone Ops">
         <span class="brand-mark" aria-hidden="true"></span>
@@ -19,6 +37,7 @@
       <nav class="drone-nav" aria-label="เมนูเว็บโดรน">
         <a class="drone-nav-link" href="../search.html">ตรวจรายชื่อ</a>
         <a class="drone-nav-link active" href="./index.html">ห้องควบคุมโดรน</a>
+        <button class="drone-nav-link" type="button" data-access-logout>ออกจากระบบ</button>
       </nav>
     </header>
 
@@ -53,7 +72,7 @@
               <strong>Drone feed standby</strong>
               <span>เปิดกล้อง อัปโหลดภาพ หรือใช้เฟรมจำลอง</span>
             </div>
-            <div class="face-guide" aria-hidden="true"><span></span></div>
+            <div class="face-box-layer" id="faceBoxes" aria-hidden="true"></div>
           </div>
 
           <div class="toolbar">
@@ -176,10 +195,12 @@
       <span>Human-in-the-loop</span>
       <span>ใช้เพื่อเสนอ candidate และประสานงานค้นหาเท่านั้น</span>
     </footer>
+    </div>
 
     <script src="../site-config.js"></script>
     <script src="../shared.js"></script>
     <script src="../tubelight-nav.js"></script>
+    <script src="../drone-access.js"></script>
     <script src="../admin.js"></script>
   </body>
 </html>

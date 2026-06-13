@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Hatyai Drone Rescue | ศูนย์ช่วยค้นหาคนหาย</title>
+    <title>Hatyai Drone Rescue | ศูนย์ประสานข้อมูลผู้สูญหาย</title>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body data-page="home" class="public-home">
@@ -15,7 +15,6 @@
           <small>ศูนย์ประสานข้อมูลผู้สูญหายในพื้นที่หาดใหญ่</small>
         </span>
       </a>
-      
     </header>
 
     <main>
@@ -24,11 +23,25 @@
         <div class="hero-overlay"></div>
         <div class="hero-content">
           <span class="eyebrow">Hat Yai Flood Rescue</span>
-          <h1>ค้นหาเร็วขึ้น</h1>
-          <p>ตรวจรายชื่อ หรือแจ้งข้อมูลใหม่<br />ระบบจะส่งต่อให้ทีมค้นหาโดยอัตโนมัติ</p>
+          <h1>ค้นหาเร็วขึ้นด้วย</h1>
+          <p>รวมข้อมูลจากประชาชน ภาพอ้างอิง และพิกัดจากทีมโดรนไว้ใน flow เดียว เพื่อให้เจ้าหน้าที่ตรวจสอบและอัปเดตสถานะได้เร็วขึ้น</p>
           <div class="hero-actions">
             <a class="primary-button" href="./search.html">ตรวจรายชื่อผู้สูญหาย</a>
-            <a class="secondary-button" href="./report.html">แจ้งผู้สูญหาย</a>
+            <a class="secondary-button" href="./report.html">แจ้งข้อมูลใหม่</a>
+          </div>
+          <div class="hero-metrics" aria-label="ภาพรวมการใช้งาน">
+            <div>
+              <strong>Human review</strong>
+              <span>เจ้าหน้าที่ยืนยันก่อนเปลี่ยนสถานะ</span>
+            </div>
+            <div>
+              <strong>Drone Ops</strong>
+              <span>แยกเว็บสำหรับทีมปฏิบัติการ</span>
+            </div>
+            <div>
+              <strong>PDPA aware</strong>
+              <span>ใช้ข้อมูลเท่าที่จำเป็นต่อภารกิจ</span>
+            </div>
           </div>
         </div>
       </section>
@@ -36,18 +49,18 @@
       <section class="notice-band home-notice" aria-labelledby="noticeTitle">
         <div class="section-inner">
           <div class="notice-copy">
-            <span class="eyebrow red">ประกาศ</span>
-            <h2 id="noticeTitle">ก่อนตรวจสอบรายชื่อผู้สูญหาย</h2>
-            <p>ข้อมูลนี้ใช้เพื่อประสานงานกู้ภัยเท่านั้น กรุณาใช้เพื่อตรวจสถานะหรือแจ้งข้อมูลที่จำเป็น</p>
+            <span class="eyebrow red">ก่อนเริ่มใช้งาน</span>
+            <h2 id="noticeTitle">เลือกทางที่ตรงกับสถานการณ์ตอนนี้</h2>
+            <p>ถ้าต้องการเช็กสถานะ ให้ค้นจากชื่อ รหัสเคส หรือพื้นที่พบล่าสุด ถ้าต้องแจ้งข้อมูลใหม่ ให้กรอกข้อมูลเท่าที่ทราบและแนบรูปอ้างอิงที่ชัดที่สุด</p>
           </div>
           <div class="notice-card">
             <div class="notice-item">
-              <strong>ต้องการดูสถานะ</strong>
-              <span>ค้นหาด้วยชื่อ รหัสเคส หรือพื้นที่พบล่าสุด</span>
+              <strong>ตรวจสอบสถานะ</strong>
+              <span>ค้นหาเคสที่กำลังค้นหา รอยืนยัน หรือพบแล้ว พร้อมพิกัดล่าสุดเมื่อมีการยืนยันจากทีมภาคสนาม</span>
             </div>
             <div class="notice-item">
-              <strong>ต้องการแจ้งข้อมูลใหม่</strong>
-              <span>กรอกข้อมูลสำคัญและแนบรูปอ้างอิง</span>
+              <strong>แจ้งข้อมูลผู้สูญหาย</strong>
+              <span>ส่งชื่อ จุดที่พบล่าสุด ข้อมูลติดต่อ และรูปใบหน้าอ้างอิงเข้าสู่คิวช่วยเหลือ</span>
             </div>
             <div class="notice-actions">
               <a class="primary-button" href="./search.html">ตรวจรายชื่อ</a>
@@ -56,11 +69,44 @@
           </div>
         </div>
       </section>
+
+      <section class="role-section" aria-labelledby="flowTitle">
+        <div class="section-inner">
+          <div class="section-heading">
+            <span class="eyebrow">Rescue workflow</span>
+            <h2 id="flowTitle">ข้อมูลเดียวกัน แยกหน้าตามบทบาท</h2>
+            <p>ประชาชนใช้หน้าเช็กและแจ้งข้อมูล ส่วนทีมโดรนใช้เว็บปฏิบัติการที่มี passcode และควรล็อกด้วย Cloudflare Access ตอนขึ้น production</p>
+          </div>
+          <div class="role-grid">
+            <a class="role-card primary-role" href="./search.html">
+              <span class="role-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m16 16 5 5" /></svg>
+              </span>
+              <strong>ตรวจสถานะ</strong>
+              <span>ดูรายชื่อ สถานะ และรายละเอียดล่าสุดของเคสที่อยู่ในระบบ</span>
+            </a>
+            <a class="role-card" href="./report.html">
+              <span class="role-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z" /><path d="M14 3v6h6M8 13h8M8 17h5" /></svg>
+              </span>
+              <strong>แจ้งข้อมูล</strong>
+              <span>เพิ่มเคสใหม่พร้อมภาพอ้างอิงและเบอร์ติดต่อสำหรับประสานงาน</span>
+            </a>
+            <a class="role-card ops-role" href="./drone/">
+              <span class="role-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M10 10h4v4h-4z" /><path d="M4 4h4v4H4zM16 4h4v4h-4zM4 16h4v4H4zM16 16h4v4h-4zM8 6h8M8 18h8M6 8v8M18 8v8" /></svg>
+              </span>
+              <strong>Drone Ops</strong>
+              <span>เข้าห้องควบคุมโดรนเพื่อสแกนภาพ บันทึกพิกัด และส่งผลยืนยันด้วยรหัสทีม</span>
+            </a>
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer class="footer-note">
       <span>ต้นแบบเพื่อการช่วยเหลือ</span>
-      <span>ควรมีเจ้าหน้าที่ตรวจสอบก่อนเปลี่ยนสถานะเป็นพบแล้วในระบบจริง</span>
+      <span>ระบบจริงควรมีเจ้าหน้าที่ตรวจสอบก่อนเปลี่ยนสถานะและจัดการข้อมูลส่วนบุคคลตามนโยบายภารกิจ</span>
     </footer>
 
     <script src="./site-config.js"></script>

@@ -78,10 +78,53 @@ PUBLIC_SITE_URL=https://autokgapai.pages.dev
 DRONE_SITE_URL=https://autokgapai-drone.pages.dev
 SUPABASE_URL=
 SUPABASE_PUBLISHABLE_KEY=
+DRONE_ACCESS_CODE=change-this-passcode
 ```
 
 Do not put `SUPABASE_SERVICE_ROLE_KEY` in either static site. It must stay on a
 trusted backend only.
+
+## Drone Ops access
+
+The Drone Ops page has a lightweight passcode gate for the static prototype.
+Local development uses `drone-ops` as the passcode. For Cloudflare Pages, set
+`DRONE_ACCESS_CODE` as a build environment variable on the Drone Ops project and
+redeploy.
+
+This client-side gate is only a convenience layer. The safer production setup is
+Cloudflare Access:
+
+1. Open Cloudflare Zero Trust.
+2. Go to Access > Applications > Add an application > Self-hosted.
+3. Set the application domain to `autokgapai-drone.pages.dev` or the custom
+   Drone Ops domain.
+4. Add a policy that allows only the rescue team emails or identity provider
+   group.
+5. Keep the in-app passcode as a secondary, low-friction checkpoint.
+
+## Push and deploy
+
+Use this flow when changes are ready:
+
+```bash
+git status
+git add .
+git commit -m "Update drone ops access and theme toggle"
+git push origin master
+```
+
+Then deploy both Cloudflare Pages projects from this machine:
+
+```bash
+npm run pages:deploy
+npm run pages:deploy:drone
+```
+
+Or deploy both in one command:
+
+```bash
+npm run pages:deploy:all
+```
 
 ## Tubelight navigation
 

@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 
 const root = path.resolve(__dirname, "..");
 const publicOutDir = path.join(root, "dist");
@@ -10,6 +11,7 @@ const defaultPublicSiteUrl = "https://autokgapai.pages.dev";
 const defaultDroneSiteUrl = "https://autokgapai-drone.pages.dev";
 const publicSiteUrl = cleanBaseUrl(process.env.PUBLIC_SITE_URL || defaultPublicSiteUrl);
 const droneSiteUrl = cleanBaseUrl(process.env.DRONE_SITE_URL || defaultDroneSiteUrl);
+const droneAccessCode = process.env.DRONE_ACCESS_CODE || "drone-ops";
 
 const sharedPublicEntries = [
   "index.html",
@@ -26,12 +28,17 @@ const droneEntries = [
   "styles.css",
   "shared.js",
   "admin.js",
+  "drone-access.js",
   "tubelight-nav.js",
   "assets"
 ];
 
 function cleanBaseUrl(value) {
   return String(value || "").replace(/\/+$/, "");
+}
+
+function sha256(value) {
+  return crypto.createHash("sha256").update(String(value), "utf8").digest("hex");
 }
 
 function copyRecursive(source, destination) {
@@ -70,7 +77,8 @@ function configJs() {
     publicBaseUrl: publicSiteUrl,
     droneBaseUrl: droneSiteUrl,
     supabaseUrl: process.env.SUPABASE_URL || "",
-    supabasePublishableKey: process.env.SUPABASE_PUBLISHABLE_KEY || ""
+    supabasePublishableKey: process.env.SUPABASE_PUBLISHABLE_KEY || "",
+    droneAccessHash: process.env.DRONE_ACCESS_HASH || sha256(droneAccessCode)
   };
 
   return `window.HatyaiRescueConfig = ${JSON.stringify(config, null, 2)};\n`;
@@ -130,6 +138,7 @@ function buildDrone() {
     .replaceAll('src="../site-config.js"', 'src="./site-config.js"')
     .replaceAll('src="../shared.js"', 'src="./shared.js"')
     .replaceAll('src="../tubelight-nav.js"', 'src="./tubelight-nav.js"')
+    .replaceAll('src="../drone-access.js"', 'src="./drone-access.js"')
     .replaceAll('src="../admin.js"', 'src="./admin.js"');
 
   writeText(droneOutDir, "index.html", droneIndex);

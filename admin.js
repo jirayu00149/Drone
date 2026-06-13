@@ -10,6 +10,7 @@
     lastSnapshot: "",
     autoScanTimer: null,
     lastAutoScanAt: 0,
+    faceDetector: null,
     drone: {
       battery: 86,
       signal: 92,
@@ -24,6 +25,7 @@
     cameraVideo: document.querySelector("#cameraVideo"),
     frameCanvas: document.querySelector("#frameCanvas"),
     cameraEmpty: document.querySelector("#cameraEmpty"),
+    faceBoxes: document.querySelector("#faceBoxes"),
     startCameraBtn: document.querySelector("#startCameraBtn"),
     captureBtn: document.querySelector("#captureBtn"),
     demoFrameBtn: document.querySelector("#demoFrameBtn"),
@@ -51,6 +53,198 @@
   function updateScanStatus(text, tone = "") {
     els.scanStatus.textContent = text;
     els.scanStatus.className = `scan-status ${tone}`;
+  }
+
+  function clearFaceBoxes() {
+    if (els.faceBoxes) els.faceBoxes.innerHTML = "";
+  }
+
+  function renderFaceBoxes(boxes, sourceWidth = els.frameCanvas.width, sourceHeight = els.frameCanvas.height) {
+    if (!els.faceBoxes) return;
+    if (!boxes.length) {
+      clearFaceBoxes();
+      return;
+    }
+
+    const layerWidth = els.faceBoxes.clientWidth || els.frameCanvas.clientWidth || sourceWidth;
+    const layerHeight = els.faceBoxes.clientHeight || els.frameCanvas.clientHeight || sourceHeight;
+    const scaleX = layerWidth / sourceWidth;
+    const scaleY = layerHeight / sourceHeight;
+
+    els.faceBoxes.innerHTML = boxes
+      .map((box) => {
+        const x = R.clamp(box.x * scaleX, 0, layerWidth - 12);
+        const y = R.clamp(box.y * scaleY, 0, layerHeight - 12);
+        const width = R.clamp(box.width * scaleX, 24, layerWidth - x);
+        const height = R.clamp(box.height * scaleY, 24, layerHeight - y);
+        return `<span class="face-box" style="left:${x}px; top:${y}px; width:${width}px; height:${height}px;"></span>`;
+      })
+      .join("");
+  }
+
+  function isSkinPixel(r, g, b) {
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const y = 0.299 * r + 0.587 * g + 0.114 * b;
+    const cb = 128 - 0.168736 * r - 0.331264 * g + 0.5 * b;
+    const cr = 128 + 0.5 * r - 0.418688 * g - 0.081312 * b;
+    const chroma = max - min;
+    return y > 28 && y < 238 && chroma > 12 && cb > 72 && cb < 145 && cr > 118 && cr < 188 && r > b * 0.82;
+  }
+
+  function fallbackFaceBoxes() {
+    const source = els.frameCanvas;
+    const sample = document.createElement("canvas");
+    const sampleWidth = 160;
+    const sampleHeight = 90;
+    sample.width = sampleWidth;
+    sample.height = sampleHeight;
+
+    const ctx = sample.getContext("2d", { willReadFrequently: true });
+    ctx.drawImage(source, 0, 0, sampleWidth, sampleHeight);
+    const pixels = ctx.getImageData(0, 0, sampleWidth, sampleHeight).data;
+    const mask = new Uint8Array(sampleWidth * sampleHeight);
+
+    const minX = Math.floor(sampleWidth * 0.16);
+    const maxX = Math.floor(sampleWidth * 0.84);
+    const minY = Math.floor(sampleHeight * 0.10);
+    const maxY = Math.floor(sampleHeight * 0.82);
+
+    for (let y = minY; y < maxY; y += 1) {
+      for (let x = minX; x < maxX; x += 1) {
+        const offset = (y * sampleWidth + x) * 4;
+        if (isSkinPixel(pixels[offset], pixels[offset + 1], pixels[offset + 2])) {
+          mask[y * sampleWidth + x] = 1;
+        }
+      }
+    }
+
+    const visited = new Uint8Array(sampleWidth * sampleHeight);
+    let best = null;
+    const queue = [];
+    const centerX = sampleWidth * 0.5;
+    const centerY = sampleHeight * 0.42;
+
+    for (let start = 0; start < mask.length; start += 1) {
+      if (!mask[start] || visited[start]) continue;
+
+      visited[start] = 1;
+      queue.length = 0;
+      queue.push(start);
+      let area = 0;
+      let sumX = 0;
+      let sumY = 0;
+      let left = sampleWidth;
+      let top = sampleHeight;
+      let right = 0;
+      let bottom = 0;
+
+      for (let cursor = 0; cursor < queue.length; cursor += 1) {
+        const index = queue[cursor];
+        const x = index % sampleWidth;
+        const y = Math.floor(index / sampleWidth);
+
+        area += 1;
+        sumX += x;
+        sumY += y;
+        left = Math.min(left, x);
+        top = Math.min(top, y);
+        right = Math.max(right, x);
+        bottom = Math.max(bottom, y);
+
+        const neighbors = [index - 1, index + 1, index - sampleWidth, index + sampleWidth];
+        neighbors.forEach((neighbor) => {
+          if (neighbor < 0 || neighbor >= mask.length || visited[neighbor] || !mask[neighbor]) return;
+          const nx = neighbor % sampleWidth;
+          if (Math.abs(nx - x) > 1) return;
+          visited[neighbor] = 1;
+          queue.push(neighbor);
+        });
+      }
+
+      if (area < 22) continue;
+      const componentWidth = right - left + 1;
+      const componentHeight = bottom - top + 1;
+      if (componentWidth < 4 || componentHeight < 5) continue;
+
+      const cx = sumX / area;
+      const cy = sumY / area;
+      const distance = Math.hypot((cx - centerX) / sampleWidth, (cy - centerY) / sampleHeight);
+      const score = area * (1.4 - Math.min(distance, 1));
+      if (!best || score > best.score) {
+        best = { area, left, top, right, bottom, cx, cy, score };
+      }
+    }
+
+    if (best) {
+      const skinWidth = Math.max(best.right - best.left + 1, 12);
+      const skinHeight = Math.max(best.bottom - best.top + 1, 12);
+      const boxWidth = Math.max(skinWidth * 1.8, sampleWidth * 0.13);
+      const boxHeight = Math.max(skinHeight * 2.15, sampleHeight * 0.24);
+      const x = (best.cx - boxWidth / 2) * (source.width / sampleWidth);
+      const y = (best.cy - boxHeight * 0.42) * (source.height / sampleHeight);
+      return [
+        {
+          x: R.clamp(x, 0, source.width - 24),
+          y: R.clamp(y, 0, source.height - 24),
+          width: R.clamp(boxWidth * (source.width / sampleWidth), 72, source.width),
+          height: R.clamp(boxHeight * (source.height / sampleHeight), 92, source.height)
+        }
+      ];
+    }
+
+    const fallbackWidth = source.width * 0.22;
+    const fallbackHeight = source.height * 0.38;
+    return [
+      {
+        x: source.width * 0.39,
+        y: source.height * 0.18,
+        width: fallbackWidth,
+        height: fallbackHeight
+      }
+    ];
+  }
+
+  function ensureFaceDetector() {
+    if (state.faceDetector) return state.faceDetector;
+    if (!("FaceDetector" in window)) return null;
+    try {
+      state.faceDetector = new window.FaceDetector({ fastMode: true, maxDetectedFaces: 5 });
+      return state.faceDetector;
+    } catch {
+      return null;
+    }
+  }
+
+  async function detectFacesInFrame() {
+    const detector = ensureFaceDetector();
+    if (!detector) {
+      const boxes = fallbackFaceBoxes();
+      renderFaceBoxes(boxes);
+      return { supported: false, boxes };
+    }
+
+    try {
+      const faces = await detector.detect(els.frameCanvas);
+      const boxes = faces
+        .map((face) => face.boundingBox)
+        .filter(Boolean)
+        .map((box) => ({
+          x: box.x,
+          y: box.y,
+          width: box.width,
+          height: box.height
+        }));
+      renderFaceBoxes(boxes);
+      if (boxes.length) return { supported: true, boxes };
+      const fallbackBoxes = fallbackFaceBoxes();
+      renderFaceBoxes(fallbackBoxes);
+      return { supported: false, boxes: fallbackBoxes };
+    } catch {
+      const boxes = fallbackFaceBoxes();
+      renderFaceBoxes(boxes);
+      return { supported: false, boxes };
+    }
   }
 
   function readLocation() {
@@ -152,6 +346,7 @@
     els.cameraVideo.classList.remove("is-live");
     els.frameCanvas.classList.remove("is-hidden");
     els.cameraEmpty.classList.add("is-hidden");
+    clearFaceBoxes();
   }
 
   function drawDemoFrame() {
@@ -202,9 +397,6 @@
     ctx.fillRect(faceX - 36, faceY - 38, 72, 18);
     ctx.fillStyle = "#1e2a30";
     ctx.fillRect(faceX - 28, faceY + 38, 56, 74);
-    ctx.strokeStyle = "#80d7cf";
-    ctx.lineWidth = 5;
-    ctx.strokeRect(faceX - 55, faceY - 56, 110, 138);
 
     ctx.fillStyle = "rgba(0, 0, 0, 0.54)";
     ctx.fillRect(18, 18, 300, 42);
@@ -215,6 +407,7 @@
     els.cameraVideo.classList.remove("is-live");
     els.frameCanvas.classList.remove("is-hidden");
     els.cameraEmpty.classList.add("is-hidden");
+    renderFaceBoxes([{ x: faceX - 55, y: faceY - 56, width: 110, height: 138 }]);
 
     state.people = R.loadPeople();
     const target = state.people.find((person) => person.status !== "found") || state.people[0];
@@ -318,7 +511,7 @@
     renderPins();
   }
 
-  function scanLiveFrame() {
+  async function scanLiveFrame() {
     if (!state.stream || !els.cameraVideo.videoWidth || !els.cameraVideo.videoHeight) {
       return;
     }
@@ -331,6 +524,11 @@
     state.lastAutoScanAt = now;
     const ctx = els.frameCanvas.getContext("2d");
     ctx.drawImage(els.cameraVideo, 0, 0, els.frameCanvas.width, els.frameCanvas.height);
+    const detection = await detectFacesInFrame();
+    if (detection.supported && !detection.boxes.length) {
+      updateScanStatus("ยังไม่พบใบหน้าในเฟรม", "is-warning");
+      return;
+    }
     state.lastProbeVector = R.vectorFromCanvas(els.frameCanvas);
     state.lastSnapshot = canvasSnapshot();
     runMatch(state.lastProbeVector);
@@ -409,6 +607,7 @@
       els.cameraVideo.classList.add("is-live");
       els.frameCanvas.classList.add("is-hidden");
       els.cameraEmpty.classList.add("is-hidden");
+      clearFaceBoxes();
       startAutoScan();
       updateScanStatus("กล้องพร้อม auto scan", "is-scanning");
     } catch {
@@ -416,7 +615,7 @@
     }
   }
 
-  function captureFromVideo() {
+  async function captureFromVideo() {
     if (!els.cameraVideo.videoWidth || !els.cameraVideo.videoHeight) {
       updateScanStatus("ยังไม่มีภาพจากกล้อง", "is-warning");
       return;
@@ -425,6 +624,11 @@
     ctx.drawImage(els.cameraVideo, 0, 0, els.frameCanvas.width, els.frameCanvas.height);
     els.cameraVideo.classList.remove("is-live");
     els.frameCanvas.classList.remove("is-hidden");
+    const detection = await detectFacesInFrame();
+    if (detection.supported && !detection.boxes.length) {
+      updateScanStatus("ยังไม่พบใบหน้าในภาพ", "is-warning");
+      return;
+    }
     state.lastProbeVector = R.vectorFromCanvas(els.frameCanvas);
     state.lastSnapshot = canvasSnapshot();
     runMatch(state.lastProbeVector);
@@ -437,6 +641,12 @@
     const src = await R.fileToDataUrl(file);
     const image = await R.loadImage(src);
     drawImageToFrame(image);
+    const detection = await detectFacesInFrame();
+    if (detection.supported && !detection.boxes.length) {
+      updateScanStatus("ยังไม่พบใบหน้าในภาพ", "is-warning");
+      event.target.value = "";
+      return;
+    }
     state.lastProbeVector = await R.vectorFromImageSource(src);
     state.lastSnapshot = canvasSnapshot();
     runMatch(state.lastProbeVector);

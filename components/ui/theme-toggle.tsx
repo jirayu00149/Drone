@@ -10,7 +10,6 @@ interface ThemeToggleProps {
 
 export function ThemeToggle({ className }: ThemeToggleProps) {
   const [isDark, setIsDark] = useState(true)
-  const toggleTheme = () => setIsDark((current) => !current)
 
   // next-themes
   // const { resolvedTheme, setTheme } = useTheme()
@@ -26,15 +25,9 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
           : "bg-white border border-zinc-200",
         className
       )}
-      onClick={toggleTheme}
-      onKeyDown={(event) => {
-        if (event.key !== "Enter" && event.key !== " ") return
-        event.preventDefault()
-        toggleTheme()
-      }}
+      onClick={() => setIsDark(!isDark)}
       role="button"
       tabIndex={0}
-      aria-label={isDark ? "Switch to light theme" : "Switch to dark theme"}
     >
       <div className="flex justify-between items-center w-full">
         <div

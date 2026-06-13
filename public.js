@@ -28,7 +28,7 @@
     const title = document.querySelector(".public-home .hero-content h1");
     if (!title) return;
 
-    const words = ["drone teams", "case reports", "field logs", "human review"];
+    const words = ["ข้อมูลประชาชน", "ทีมโดรน", "พิกัดล่าสุด", "การยืนยันจากเจ้าหน้าที่"];
     const wordNode = document.createElement("span");
     wordNode.className = "hero-rotating-word";
     wordNode.setAttribute("aria-live", "polite");

@@ -32,8 +32,9 @@ npx shadcn@latest add button
 npm install lucide-react framer-motion clsx tailwind-merge class-variance-authority @radix-ui/react-slot
 ```
 
-The current `package.json` stays minimal because the deployed site is still a
-static build and does not compile these TSX components yet.
+The deployed site is still a static build and does not compile these TSX
+components yet. `package.json` includes the small shared dependencies needed by
+the copied shadcn-style components so a future React migration can reuse them.
 
 Recommended shadcn aliases:
 
