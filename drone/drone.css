@@ -296,32 +296,108 @@
 .face-box-layer {
   position: absolute;
   inset: 0;
-  z-index: 4;
+  z-index: 6;
   pointer-events: none;
 }
 
 .face-box {
   position: absolute;
-  border: 2px solid #69e3db;
-  border-radius: 8px;
+  border: 4px solid rgba(77, 199, 221, 0.92);
+  border-radius: 2px;
+  background: rgba(77, 199, 221, 0.04);
   box-shadow:
-    0 0 0 1px rgba(8, 17, 20, 0.48),
-    0 0 22px rgba(105, 227, 219, 0.34);
+    0 0 0 1px rgba(8, 17, 20, 0.62),
+    0 0 28px rgba(77, 199, 221, 0.32);
 }
 
 .face-box::after {
-  content: "AI FACE";
+  content: "FACE DETECTED";
   position: absolute;
-  left: -2px;
-  bottom: calc(100% + 6px);
-  padding: 3px 7px;
-  border: 1px solid rgba(105, 227, 219, 0.55);
-  border-radius: 999px;
-  background: rgba(8, 17, 20, 0.86);
-  color: #dffefd;
-  font-size: 11px;
+  left: -4px;
+  top: calc(100% + 8px);
+  padding: 5px 9px;
+  border: 1px solid rgba(77, 199, 221, 0.7);
+  border-radius: 3px;
+  background: rgba(8, 17, 20, 0.82);
+  color: #dffcff;
+  font-size: 12px;
   font-weight: 900;
+  letter-spacing: 0.04em;
   white-space: nowrap;
+}
+
+.ai-detection-hud {
+  position: absolute;
+  top: 118px;
+  right: 34px;
+  z-index: 7;
+  width: min(360px, calc(100% - 68px));
+  display: grid;
+  gap: 13px;
+  padding: 18px 20px;
+  border: 1px solid rgba(77, 199, 221, 0.34);
+  border-radius: 4px;
+  background: linear-gradient(90deg, rgba(7, 16, 19, 0.9), rgba(7, 16, 19, 0.68));
+  color: #ffffff;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+}
+
+.ai-detection-hud[hidden] {
+  display: none;
+}
+
+.ai-hud-title {
+  color: #54d4ec;
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.ai-hud-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #6ee780;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.ai-hud-status span {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  color: #6ee780;
+  font-size: 26px;
+}
+
+.ai-hud-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  color: #f4fbfb;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.ai-hud-row svg {
+  width: 30px;
+  height: 30px;
+  color: #ffffff;
+  stroke-width: 2.4;
+}
+
+.ai-detection-hud[data-tone="match"] {
+  border-color: rgba(110, 231, 128, 0.4);
+}
+
+.ai-detection-hud[data-tone="confirmed"] .ai-hud-title,
+.ai-detection-hud[data-tone="confirmed"] .ai-hud-status {
+  color: #7cff8b;
 }
 
 .drone-panel,
@@ -380,5 +456,21 @@
       "drone"
       "match"
       "ops";
+  }
+
+  .ai-detection-hud {
+    top: auto;
+    right: 14px;
+    left: 14px;
+    bottom: 14px;
+    width: auto;
+  }
+
+  .ai-hud-title {
+    font-size: 26px;
+  }
+
+  .ai-hud-row {
+    font-size: 15px;
   }
 }

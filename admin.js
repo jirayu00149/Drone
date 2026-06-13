@@ -1,5 +1,9 @@
 (() => {
   const R = window.HatyaiRescue;
+  const AUTO_SCAN_INTERVAL_MS = 450;
+  const AUTO_CAPTURE_EVERY_MS = 900;
+  const AUTO_CONFIRM_COOLDOWN_MS = 4500;
+
   const state = {
     people: R.loadPeople(),
     logs: R.loadLogs(),
@@ -10,6 +14,7 @@
     lastSnapshot: "",
     autoScanTimer: null,
     lastAutoScanAt: 0,
+    lastAutoConfirmAt: 0,
     faceDetector: null,
     drone: {
       battery: 86,
@@ -26,6 +31,11 @@
     frameCanvas: document.querySelector("#frameCanvas"),
     cameraEmpty: document.querySelector("#cameraEmpty"),
     faceBoxes: document.querySelector("#faceBoxes"),
+    aiDetectionHud: document.querySelector("#aiDetectionHud"),
+    aiHudState: document.querySelector("#aiHudState"),
+    aiHudMatch: document.querySelector("#aiHudMatch"),
+    aiHudConfidence: document.querySelector("#aiHudConfidence"),
+    aiHudMode: document.querySelector("#aiHudMode"),
     startCameraBtn: document.querySelector("#startCameraBtn"),
     captureBtn: document.querySelector("#captureBtn"),
     demoFrameBtn: document.querySelector("#demoFrameBtn"),
@@ -55,11 +65,22 @@
     els.scanStatus.className = `scan-status ${tone}`;
   }
 
-  function clearFaceBoxes() {
-    if (els.faceBoxes) els.faceBoxes.innerHTML = "";
+  function updateAiHud({ visible = true, stateText = "Detected", matchText = "Scanning database", confidenceText = "Auto capture armed", modeText = "Auto confirm on threshold", tone = "detected" } = {}) {
+    if (!els.aiDetectionHud) return;
+    els.aiDetectionHud.hidden = !visible;
+    els.aiDetectionHud.dataset.tone = tone;
+    if (els.aiHudState) els.aiHudState.textContent = stateText;
+    if (els.aiHudMatch) els.aiHudMatch.textContent = matchText;
+    if (els.aiHudConfidence) els.aiHudConfidence.textContent = confidenceText;
+    if (els.aiHudMode) els.aiHudMode.textContent = modeText;
   }
 
-  function renderFaceBoxes(boxes, sourceWidth = els.frameCanvas.width, sourceHeight = els.frameCanvas.height) {
+  function clearFaceBoxes() {
+    if (els.faceBoxes) els.faceBoxes.innerHTML = "";
+    updateAiHud({ visible: false });
+  }
+
+  function renderFaceBoxes(boxes, sourceWidth = els.frameCanvas.width, sourceHeight = els.frameCanvas.height, options = {}) {
     if (!els.faceBoxes) return;
     if (!boxes.length) {
       clearFaceBoxes();
@@ -80,6 +101,15 @@
         return `<span class="face-box" style="left:${x}px; top:${y}px; width:${width}px; height:${height}px;"></span>`;
       })
       .join("");
+
+    updateAiHud({
+      visible: true,
+      stateText: options.stateText || "Detected",
+      matchText: options.matchText || "Face inside frame",
+      confidenceText: options.confidenceText || "Capturing face automatically",
+      modeText: options.modeText || "Comparing with rescue database",
+      tone: options.tone || "detected"
+    });
   }
 
   function isSkinPixel(r, g, b) {
@@ -193,16 +223,7 @@
       ];
     }
 
-    const fallbackWidth = source.width * 0.22;
-    const fallbackHeight = source.height * 0.38;
-    return [
-      {
-        x: source.width * 0.39,
-        y: source.height * 0.18,
-        width: fallbackWidth,
-        height: fallbackHeight
-      }
-    ];
+    return [];
   }
 
   function ensureFaceDetector() {
@@ -220,7 +241,10 @@
     const detector = ensureFaceDetector();
     if (!detector) {
       const boxes = fallbackFaceBoxes();
-      renderFaceBoxes(boxes);
+      renderFaceBoxes(boxes, els.frameCanvas.width, els.frameCanvas.height, {
+        matchText: "Fallback face detector",
+        confidenceText: "Auto capture armed"
+      });
       return { supported: false, boxes };
     }
 
@@ -235,14 +259,23 @@
           width: box.width,
           height: box.height
         }));
-      renderFaceBoxes(boxes);
+      renderFaceBoxes(boxes, els.frameCanvas.width, els.frameCanvas.height, {
+        matchText: "Native face detector",
+        confidenceText: "Auto capture armed"
+      });
       if (boxes.length) return { supported: true, boxes };
       const fallbackBoxes = fallbackFaceBoxes();
-      renderFaceBoxes(fallbackBoxes);
+      renderFaceBoxes(fallbackBoxes, els.frameCanvas.width, els.frameCanvas.height, {
+        matchText: "Fallback face detector",
+        confidenceText: "Auto capture armed"
+      });
       return { supported: false, boxes: fallbackBoxes };
     } catch {
       const boxes = fallbackFaceBoxes();
-      renderFaceBoxes(boxes);
+      renderFaceBoxes(boxes, els.frameCanvas.width, els.frameCanvas.height, {
+        matchText: "Fallback face detector",
+        confidenceText: "Auto capture armed"
+      });
       return { supported: false, boxes };
     }
   }
@@ -413,7 +446,7 @@
     const target = state.people.find((person) => person.status !== "found") || state.people[0];
     state.lastProbeVector = target ? R.jitterVector(target.vector, "demo-frame-hatyai-flood", 0.04) : R.vectorFromCanvas(canvas);
     state.lastSnapshot = canvasSnapshot();
-    runMatch(state.lastProbeVector);
+    runMatch(state.lastProbeVector, { autoCapture: true, autoConfirm: true });
   }
 
   function renderMatches(matches, threshold) {
@@ -449,6 +482,7 @@
   function runMatch(probeVector, options = {}) {
     state.people = R.loadPeople();
     const threshold = Number(els.thresholdRange.value);
+    const isAutoCapture = options.autoCapture === true;
     const activePeople = state.people.filter((person) => person.status !== "found");
     state.lastMatches = activePeople
       .map((person) => ({ person, score: R.cosineScore(probeVector, person.vector) }))
@@ -458,12 +492,41 @@
     renderMatches(state.lastMatches, threshold);
     const top = state.lastMatches[0];
     if (top && top.score >= threshold) {
-      updateScanStatus(`พบ candidate ${top.score}% รอยืนยัน`, "is-match");
+      updateScanStatus(`พบ candidate ${top.score}% ${options.autoConfirm === true ? "ยืนยันอัตโนมัติ" : "รอยืนยัน"}`, "is-match");
+      updateAiHud({
+        visible: true,
+        stateText: "Detected",
+        matchText: `${top.person.id} ${top.person.name}`,
+        confidenceText: `Match confidence ${top.score}%`,
+        modeText: options.autoConfirm === true ? "Auto confirm ready" : "Manual confirmation ready",
+        tone: "match"
+      });
       if (options.autoConfirm === true) {
-        confirmFound(top.person.id, top.score, true);
+        const now = Date.now();
+        if (now - state.lastAutoConfirmAt > AUTO_CONFIRM_COOLDOWN_MS) {
+          state.lastAutoConfirmAt = now;
+          confirmFound(top.person.id, top.score, true);
+          updateAiHud({
+            visible: true,
+            stateText: "Detected",
+            matchText: `${top.person.id} auto confirmed`,
+            confidenceText: `Match confidence ${top.score}%`,
+            modeText: "Status sent to rescue database",
+            tone: "confirmed"
+          });
+        }
       }
     } else {
-      updateScanStatus("ยังไม่พบ match ที่ถึง threshold", "is-warning");
+      const confidenceText = top ? `Best candidate ${top.score}% / threshold ${threshold}%` : "No active rescue case";
+      updateScanStatus(isAutoCapture ? "จับภาพแล้ว กำลังเทียบฐานข้อมูล" : "ยังไม่พบ match ที่ถึง threshold", "is-warning");
+      updateAiHud({
+        visible: true,
+        stateText: "Detected",
+        matchText: top ? `Comparing ${top.person.id}` : "No active case",
+        confidenceText,
+        modeText: "Auto capture continues",
+        tone: "detected"
+      });
     }
   }
 
@@ -517,7 +580,7 @@
     }
 
     const now = Date.now();
-    if (now - state.lastAutoScanAt < 1100) {
+    if (now - state.lastAutoScanAt < AUTO_CAPTURE_EVERY_MS) {
       return;
     }
 
@@ -525,20 +588,20 @@
     const ctx = els.frameCanvas.getContext("2d");
     ctx.drawImage(els.cameraVideo, 0, 0, els.frameCanvas.width, els.frameCanvas.height);
     const detection = await detectFacesInFrame();
-    if (detection.supported && !detection.boxes.length) {
+    if (!detection.boxes.length) {
       updateScanStatus("ยังไม่พบใบหน้าในเฟรม", "is-warning");
       return;
     }
     state.lastProbeVector = R.vectorFromCanvas(els.frameCanvas);
     state.lastSnapshot = canvasSnapshot();
-    runMatch(state.lastProbeVector);
+    runMatch(state.lastProbeVector, { autoCapture: true, autoConfirm: true });
   }
 
   function startAutoScan() {
     if (state.autoScanTimer) {
       clearInterval(state.autoScanTimer);
     }
-    state.autoScanTimer = setInterval(scanLiveFrame, 500);
+    state.autoScanTimer = setInterval(scanLiveFrame, AUTO_SCAN_INTERVAL_MS);
   }
 
   function markCandidate(personId, score) {
@@ -625,13 +688,13 @@
     els.cameraVideo.classList.remove("is-live");
     els.frameCanvas.classList.remove("is-hidden");
     const detection = await detectFacesInFrame();
-    if (detection.supported && !detection.boxes.length) {
+    if (!detection.boxes.length) {
       updateScanStatus("ยังไม่พบใบหน้าในภาพ", "is-warning");
       return;
     }
     state.lastProbeVector = R.vectorFromCanvas(els.frameCanvas);
     state.lastSnapshot = canvasSnapshot();
-    runMatch(state.lastProbeVector);
+    runMatch(state.lastProbeVector, { autoCapture: true, autoConfirm: true });
   }
 
   async function handleUpload(event) {
@@ -642,14 +705,14 @@
     const image = await R.loadImage(src);
     drawImageToFrame(image);
     const detection = await detectFacesInFrame();
-    if (detection.supported && !detection.boxes.length) {
+    if (!detection.boxes.length) {
       updateScanStatus("ยังไม่พบใบหน้าในภาพ", "is-warning");
       event.target.value = "";
       return;
     }
     state.lastProbeVector = await R.vectorFromImageSource(src);
     state.lastSnapshot = canvasSnapshot();
-    runMatch(state.lastProbeVector);
+    runMatch(state.lastProbeVector, { autoCapture: true, autoConfirm: true });
     event.target.value = "";
   }
 

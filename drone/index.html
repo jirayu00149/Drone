@@ -73,6 +73,25 @@
               <span>เปิดกล้อง อัปโหลดภาพ หรือใช้เฟรมจำลอง</span>
             </div>
             <div class="face-box-layer" id="faceBoxes" aria-hidden="true"></div>
+            <div class="ai-detection-hud" id="aiDetectionHud" hidden>
+              <div class="ai-hud-title">Face Match</div>
+              <div class="ai-hud-status">
+                <span aria-hidden="true">✓</span>
+                <strong id="aiHudState">Detected</strong>
+              </div>
+              <div class="ai-hud-row">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></svg>
+                <span id="aiHudMatch">Scanning database</span>
+              </div>
+              <div class="ai-hud-row">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l2-2h4l2 2h4v12H4V7Z" /><circle cx="12" cy="13" r="4" /></svg>
+                <span id="aiHudConfidence">Auto capture armed</span>
+              </div>
+              <div class="ai-hud-row">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5" /></svg>
+                <span id="aiHudMode">Auto confirm on threshold</span>
+              </div>
+            </div>
           </div>
 
           <div class="toolbar">
