@@ -21,6 +21,7 @@
       signal: 92,
       altitude: 42,
       mode: "Patrol",
+      recording: false,
       online: true
     }
   };
@@ -36,6 +37,8 @@
     aiHudMatch: document.querySelector("#aiHudMatch"),
     aiHudConfidence: document.querySelector("#aiHudConfidence"),
     aiHudMode: document.querySelector("#aiHudMode"),
+    recordBtn: document.querySelector("#recordBtn"),
+    recordLabel: document.querySelector("#recordLabel"),
     startCameraBtn: document.querySelector("#startCameraBtn"),
     captureBtn: document.querySelector("#captureBtn"),
     demoFrameBtn: document.querySelector("#demoFrameBtn"),
@@ -298,6 +301,15 @@
     els.droneOnline.className = `status-chip ${state.drone.online ? "good" : "danger"}`;
   }
 
+  function renderRecording() {
+    if (!els.recordBtn) return;
+    els.recordBtn.classList.toggle("is-recording", state.drone.recording);
+    els.recordBtn.setAttribute("aria-pressed", state.drone.recording ? "true" : "false");
+    if (els.recordLabel) {
+      els.recordLabel.textContent = state.drone.recording ? "LIVE" : "REC";
+    }
+  }
+
   function renderMissionMeta() {
     if (els.missionCount) {
       const active = R.loadPeople().filter((person) => person.status !== "found").length;
@@ -334,21 +346,21 @@
       .join("");
   }
 
-  function pushCommand(command) {
+  function pushCommand(command, explicitMode = "") {
     state.commands.unshift({
       id: `CMD-${Date.now()}`,
       command,
       status: "ส่งคำสั่งแล้ว",
       createdAt: new Date().toISOString()
     });
-    state.drone.mode = command.includes("กลับ")
+    state.drone.mode = explicitMode || (command.includes("กลับ")
       ? "Return"
       : command.includes("หยุด")
         ? "Hover"
         : command.includes("ลงจอด")
           ? "Landing"
-          : "Patrol";
-    if (command.includes("ลงจอด")) {
+          : "Patrol");
+    if (state.drone.mode === "Landing" || command.includes("ลงจอด")) {
       state.drone.altitude = 8;
     }
     R.saveCommands(state.commands);
@@ -662,18 +674,33 @@
       if (state.stream) {
         state.stream.getTracks().forEach((track) => track.stop());
       }
-      state.stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: false
-      });
+
+      const cameraProfiles = [
+        { video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+        { video: { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false },
+        { video: true, audio: false }
+      ];
+      let lastError = null;
+      for (const constraints of cameraProfiles) {
+        try {
+          state.stream = await navigator.mediaDevices.getUserMedia(constraints);
+          break;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      if (!state.stream) throw lastError || new Error("Camera unavailable");
+
       els.cameraVideo.srcObject = state.stream;
+      await els.cameraVideo.play().catch(() => {});
       els.cameraVideo.classList.add("is-live");
       els.frameCanvas.classList.add("is-hidden");
       els.cameraEmpty.classList.add("is-hidden");
       clearFaceBoxes();
       startAutoScan();
       updateScanStatus("กล้องพร้อม auto scan", "is-scanning");
-    } catch {
+    } catch (error) {
+      console.warn(error);
       updateScanStatus("เปิดกล้องไม่สำเร็จ", "is-warning");
     }
   }
@@ -732,6 +759,13 @@
     );
   }
 
+  function toggleRecording() {
+    state.drone.recording = !state.drone.recording;
+    renderRecording();
+    pushCommand(state.drone.recording ? "เริ่มบันทึกวิดีโอ" : "หยุดบันทึกวิดีโอ", state.drone.mode);
+    updateScanStatus(state.drone.recording ? "กำลังบันทึกวิดีโอ" : "หยุดบันทึกวิดีโอแล้ว", state.drone.recording ? "is-scanning" : "");
+  }
+
   function exportLogs() {
     state.logs = R.loadLogs();
     const header = ["created_at", "case_id", "name", "confidence", "lat", "lng", "source", "status"];
@@ -758,6 +792,7 @@
   function bindEvents() {
     els.startCameraBtn.addEventListener("click", startCamera);
     els.captureBtn.addEventListener("click", captureFromVideo);
+    els.recordBtn?.addEventListener("click", toggleRecording);
     els.demoFrameBtn.addEventListener("click", drawDemoFrame);
     els.probeUpload.addEventListener("change", handleUpload);
     els.gpsBtn.addEventListener("click", useDeviceLocation);
@@ -767,7 +802,7 @@
       if (state.lastProbeVector) runMatch(state.lastProbeVector);
     });
     els.commandButtons.forEach((button) => {
-      button.addEventListener("click", () => pushCommand(button.dataset.command));
+      button.addEventListener("click", () => pushCommand(button.dataset.command, button.dataset.mode));
     });
     els.matchResults.addEventListener("click", (event) => {
       const confirmButton = event.target.closest("[data-confirm]");
@@ -789,6 +824,7 @@
   bindEvents();
   renderMissionMeta();
   renderTelemetry();
+  renderRecording();
   renderCommandLog();
   renderAdminCases();
   renderPins();

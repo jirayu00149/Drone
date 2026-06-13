@@ -26,194 +26,200 @@
     </main>
 
     <div class="drone-app-shell" data-drone-app hidden aria-hidden="true">
-    <header class="drone-topbar">
-      <a class="drone-brand" href="./index.html" aria-label="โดรนพิทักษ์น้ำท่วม">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span>
-          <strong>โดรนพิทักษ์น้ำท่วม</strong>
-          <small>ระบบปฏิบัติการโดรนสำหรับตรวจสอบใบหน้า</small>
-        </span>
-      </a>
-      <nav class="drone-nav" aria-label="เมนูเว็บโดรน">
-        <a class="drone-nav-link" href="../search.html">ตรวจรายชื่อ</a>
-        <a class="drone-nav-link active" href="./index.html">ห้องควบคุมโดรน</a>
-        <button class="drone-nav-link" type="button" data-access-logout>ออกจากระบบ</button>
-      </nav>
-    </header>
+      <header class="drone-topbar">
+        <a class="drone-brand" href="./index.html" aria-label="โดรนพิทักษ์น้ำท่วม">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span>
+            <strong>โดรนพิทักษ์น้ำท่วม</strong>
+            <small>รีโมตปฏิบัติการโดรนสำหรับตรวจสอบใบหน้า</small>
+          </span>
+        </a>
+        <nav class="drone-nav" aria-label="เมนูเว็บโดรน">
+          <a class="drone-nav-link" href="../index.html">หน้าแรก</a>
+          <a class="drone-nav-link" href="../search.html">ตรวจรายชื่อ</a>
+          <a class="drone-nav-link active" href="./index.html">ห้องควบคุมโดรน</a>
+          <button class="drone-nav-link" type="button" data-access-logout>ออกจากระบบ</button>
+        </nav>
+      </header>
 
-    <main class="drone-shell">
-      <section class="drone-hero" aria-labelledby="droneHeroTitle">
-        <div>
-          <span class="eyebrow">Connected Face Check</span>
-          <h1 id="droneHeroTitle">ห้องควบคุมโดรน</h1>
-          <p>เว็บนี้แยกจากเว็บประชาชน แต่เชื่อมข้อมูลผู้สูญหายชุดเดียวกันเพื่อสแกนใบหน้า บันทึกพิกัด และส่งสถานะกลับไปยังหน้าตรวจรายชื่อ</p>
-        </div>
-        <div class="drone-connection">
-          <span>เชื่อมต่อข้อมูล</span>
-          <strong id="missionCount">0 เคสที่ต้องติดตาม</strong>
-          <small id="lastSync">อัปเดตล่าสุด -</small>
-        </div>
-      </section>
-
-      <section class="drone-grid">
-        <section class="panel camera-panel" aria-labelledby="cameraTitle">
-          <div class="panel-header compact-header">
-            <div>
-              <h2 id="cameraTitle">กล้องตรวจใบหน้า</h2>
-              <p>เปิดกล้อง อัปโหลดภาพ หรือใช้เฟรมจำลองเพื่อเทียบกับรูปจากหน้าแจ้งผู้สูญหาย</p>
-            </div>
-            <span class="scan-status" id="scanStatus">พร้อมสแกน</span>
-          </div>
-
-          <div class="camera-frame">
-            <video id="cameraVideo" playsinline muted autoplay></video>
-            <canvas id="frameCanvas" width="960" height="540"></canvas>
-            <div class="camera-empty" id="cameraEmpty">
-              <strong>Drone feed standby</strong>
-              <span>เปิดกล้อง อัปโหลดภาพ หรือใช้เฟรมจำลอง</span>
-            </div>
-            <div class="face-box-layer" id="faceBoxes" aria-hidden="true"></div>
-            <div class="ai-detection-hud" id="aiDetectionHud" hidden>
-              <div class="ai-hud-title">Face Match</div>
-              <div class="ai-hud-status">
-                <span aria-hidden="true">✓</span>
-                <strong id="aiHudState">Detected</strong>
+      <main class="drone-shell">
+        <section class="dji-console" aria-labelledby="cameraTitle">
+          <div class="controller-face">
+            <div class="controller-status-strip">
+              <div class="flight-pill">
+                <span class="status-chip good" id="droneOnline">ออนไลน์</span>
+                <strong>HY-DRONE-01</strong>
+                <span id="modeValue">Patrol</span>
               </div>
-              <div class="ai-hud-row">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></svg>
-                <span id="aiHudMatch">Scanning database</span>
+              <div class="telemetry-inline" aria-label="สถานะโดรน">
+                <div><span>Battery</span><strong id="batteryValue">86%</strong></div>
+                <div><span>Signal</span><strong id="signalValue">92%</strong></div>
+                <div><span>Altitude</span><strong id="altitudeValue">42 m</strong></div>
               </div>
-              <div class="ai-hud-row">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l2-2h4l2 2h4v12H4V7Z" /><circle cx="12" cy="13" r="4" /></svg>
-                <span id="aiHudConfidence">Auto capture armed</span>
-              </div>
-              <div class="ai-hud-row">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5" /></svg>
-                <span id="aiHudMode">Auto confirm on threshold</span>
+              <div class="mission-inline">
+                <strong id="missionCount">0 เคสที่ต้องติดตาม</strong>
+                <span id="lastSync">อัปเดตล่าสุด -</span>
               </div>
             </div>
-          </div>
 
-          <div class="toolbar">
-            <button class="tool-button" id="startCameraBtn" type="button">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l2-2h4l2 2h4v12H4V7Z" /><circle cx="12" cy="13" r="4" /></svg>
-              เปิดกล้อง
-            </button>
-            <button class="tool-button" id="captureBtn" type="button">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M6 6h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" /></svg>
-              จับภาพ
-            </button>
-            <button class="tool-button" id="demoFrameBtn" type="button">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4V5Zm3 10 3-4 3 3 2-2 2 3" /></svg>
-              เฟรมจำลอง
-            </button>
-            <label class="tool-button file-tool">
-              <input id="probeUpload" type="file" accept="image/*" />
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0-12 4 4m-4-4-4 4M5 17v3h14v-3" /></svg>
-              อัปโหลด
-            </label>
+            <section class="remote-screen camera-panel" aria-labelledby="cameraTitle">
+              <div class="screen-top-hud">
+                <div>
+                  <span class="eyebrow">AI Face Track</span>
+                  <h1 id="cameraTitle">กล้องตรวจใบหน้า</h1>
+                  <p>เปิดกล้องแล้วระบบจะจับเฟรม เทียบฐานข้อมูล และยืนยันเมื่อถึง threshold อัตโนมัติ</p>
+                </div>
+                <span class="scan-status" id="scanStatus">พร้อมสแกน</span>
+              </div>
+
+              <video id="cameraVideo" playsinline muted autoplay></video>
+              <canvas id="frameCanvas" width="960" height="540"></canvas>
+              <div class="camera-empty" id="cameraEmpty">
+                <strong>Drone feed standby</strong>
+                <span>เปิดกล้อง อัปโหลดภาพ หรือใช้เฟรมจำลอง</span>
+              </div>
+              <div class="face-box-layer" id="faceBoxes" aria-hidden="true"></div>
+              <div class="ai-detection-hud" id="aiDetectionHud" hidden>
+                <div class="ai-hud-title">Face Match</div>
+                <div class="ai-hud-status">
+                  <span aria-hidden="true">✓</span>
+                  <strong id="aiHudState">Detected</strong>
+                </div>
+                <div class="ai-hud-row">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></svg>
+                  <span id="aiHudMatch">Scanning database</span>
+                </div>
+                <div class="ai-hud-row">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l2-2h4l2 2h4v12H4V7Z" /><circle cx="12" cy="13" r="4" /></svg>
+                  <span id="aiHudConfidence">Auto capture armed</span>
+                </div>
+                <div class="ai-hud-row">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m20 6-11 11-5-5" /></svg>
+                  <span id="aiHudMode">Auto confirm on threshold</span>
+                </div>
+              </div>
+
+              <div class="screen-left-controls" aria-label="เครื่องมือกล้อง">
+                <button class="screen-tool" id="startCameraBtn" type="button" title="เปิดกล้อง" aria-label="เปิดกล้อง">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l2-2h4l2 2h4v12H4V7Z" /><circle cx="12" cy="13" r="4" /></svg>
+                  <span>CAM</span>
+                </button>
+                <button class="screen-tool" id="demoFrameBtn" type="button" title="เฟรมจำลอง" aria-label="เฟรมจำลอง">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4V5Zm3 10 3-4 3 3 2-2 2 3" /></svg>
+                  <span>SIM</span>
+                </button>
+                <label class="screen-tool file-tool" title="อัปโหลดภาพ" aria-label="อัปโหลดภาพ">
+                  <input id="probeUpload" type="file" accept="image/*" />
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0-12 4 4m-4-4-4 4M5 17v3h14v-3" /></svg>
+                  <span>UP</span>
+                </label>
+              </div>
+
+              <div class="screen-right-controls" aria-label="ปุ่มควบคุมกล้อง">
+                <button class="record-button" id="recordBtn" type="button" title="บันทึกวิดีโอ" aria-label="บันทึกวิดีโอ">
+                  <span class="record-dot" aria-hidden="true"></span>
+                  <span id="recordLabel">REC</span>
+                </button>
+                <button class="screen-tool" id="captureBtn" type="button" title="ถ่ายภาพและเทียบหน้า" aria-label="ถ่ายภาพและเทียบหน้า">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M6 6h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" /></svg>
+                </button>
+                <button class="screen-tool" id="gpsBtn" type="button" title="ใช้พิกัดอุปกรณ์" aria-label="ใช้พิกัดอุปกรณ์">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" /></svg>
+                </button>
+                <button class="screen-tool" id="exportBtn" type="button" title="ส่งออก CSV" aria-label="ส่งออก CSV">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0-12 4 4m-4-4-4 4M5 17v3h14v-3" /></svg>
+                </button>
+              </div>
+
+              <div class="screen-bottom-hud">
+                <div class="threshold-row dji-threshold">
+                  <label for="thresholdRange">Threshold</label>
+                  <input id="thresholdRange" type="range" min="40" max="98" value="60" />
+                  <output id="thresholdValue">60%</output>
+                </div>
+                <label class="coord-input">
+                  <span>Lat</span>
+                  <input id="latInput" value="7.008600" inputmode="decimal" />
+                </label>
+                <label class="coord-input">
+                  <span>Lng</span>
+                  <input id="lngInput" value="100.474700" inputmode="decimal" />
+                </label>
+              </div>
+            </section>
+
+            <div class="controller-deck">
+              <div class="stick-zone">
+                <div class="stick" aria-hidden="true"><span></span></div>
+                <div class="command-grid" aria-label="คำสั่งโดรน">
+                  <button class="command-button" type="button" data-command="กลับฐาน" data-mode="Return">RTH</button>
+                  <button class="command-button" type="button" data-command="หยุดนิ่ง" data-mode="Hover">Hover</button>
+                  <button class="command-button danger" type="button" data-command="ลงจอด" data-mode="Landing">Land</button>
+                  <button class="command-button" type="button" data-command="ลาดตระเวน" data-mode="Patrol">Patrol</button>
+                </div>
+              </div>
+
+              <div class="center-console">
+                <strong>FLOOD GUARD REMOTE</strong>
+                <span>AI auto capture • auto confirm • GPS log</span>
+                <div class="status-leds" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+              </div>
+
+              <div class="stick-zone camera-stick-zone">
+                <div class="stick" aria-hidden="true"><span></span></div>
+                <div class="quick-specs">
+                  <div><span>Zoom</span><strong>1.0x</strong></div>
+                  <div><span>Gimbal</span><strong>-12°</strong></div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        <aside class="panel drone-panel" aria-labelledby="droneTitle">
-          <div class="panel-header compact-header">
-            <div>
-              <h2 id="droneTitle">สถานะโดรน</h2>
-              <p>HY-DRONE-01</p>
+        <section class="ops-drawer">
+          <section class="panel match-panel" aria-labelledby="matchTitle">
+            <div class="panel-header compact-header">
+              <div>
+                <h2 id="matchTitle">ผลตรวจใบหน้า</h2>
+                <p>เมื่อคะแนนถึง threshold ระบบจะยืนยันและส่งสถานะกลับหน้า public อัตโนมัติ</p>
+              </div>
             </div>
-            <span class="status-chip good" id="droneOnline">ออนไลน์</span>
-          </div>
+            <div class="match-results" id="matchResults" aria-live="polite">
+              <div class="empty-note">ยังไม่มีผลตรวจจากกล้อง</div>
+            </div>
+          </section>
 
-          <div class="telemetry-grid">
-            <div>
-              <span>Battery</span>
-              <strong id="batteryValue">86%</strong>
+          <section class="panel ops-panel" aria-labelledby="opsTitle">
+            <div class="panel-header compact-header">
+              <div>
+                <h2 id="opsTitle">เคส พิกัด และคำสั่ง</h2>
+                <p>บันทึกการยืนยัน พิกัดล่าสุด และ command log ของภารกิจ</p>
+              </div>
             </div>
-            <div>
-              <span>Signal</span>
-              <strong id="signalValue">92%</strong>
+            <div class="ops-split">
+              <div class="mini-map" aria-label="แผนที่จำลองหาดใหญ่">
+                <div class="water water-a"></div>
+                <div class="water water-b"></div>
+                <div class="road road-a"></div>
+                <div class="road road-b"></div>
+                <div class="district district-a">คลองอู่ตะเภา</div>
+                <div class="district district-b">ตลาด/ย่านเศรษฐกิจ</div>
+                <div class="district district-c">ศูนย์กู้ภัย</div>
+                <div class="map-pins" id="mapPins"></div>
+              </div>
+              <div>
+                <div class="command-log" id="commandLog" aria-live="polite"></div>
+                <div class="case-list compact-list" id="adminCaseList" aria-live="polite"></div>
+              </div>
             </div>
-            <div>
-              <span>Altitude</span>
-              <strong id="altitudeValue">42 m</strong>
-            </div>
-            <div>
-              <span>Mode</span>
-              <strong id="modeValue">Patrol</strong>
-            </div>
-          </div>
-
-          <div class="location-box">
-            <label>
-              <span>Lat</span>
-              <input id="latInput" value="7.008600" inputmode="decimal" />
-            </label>
-            <label>
-              <span>Lng</span>
-              <input id="lngInput" value="100.474700" inputmode="decimal" />
-            </label>
-            <button class="icon-button" id="gpsBtn" type="button" title="ใช้พิกัดอุปกรณ์" aria-label="ใช้พิกัดอุปกรณ์">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" /></svg>
-            </button>
-          </div>
-
-          <div class="command-grid" aria-label="คำสั่งโดรน">
-            <button class="command-button" type="button" data-command="กลับฐาน">กลับฐาน</button>
-            
-          </div>
-
-          <div class="command-log" id="commandLog" aria-live="polite"></div>
-        </aside>
-
-        <section class="panel match-panel" aria-labelledby="matchTitle">
-          <div class="panel-header compact-header">
-            <div>
-              <h2 id="matchTitle">ผลตรวจใบหน้า</h2>
-              <p>AI เสนอ candidate เท่านั้น เจ้าหน้าที่ต้องยืนยันก่อนส่งสถานะกลับเว็บประชาชน</p>
-            </div>
-            <div class="threshold-row">
-              <label for="thresholdRange">Threshold</label>
-              <input id="thresholdRange" type="range" min="40" max="98" value="60" />
-              <output id="thresholdValue">60%</output>
-            </div>
-          </div>
-
-          <div class="match-results" id="matchResults" aria-live="polite">
-            <div class="empty-note">ยังไม่มีผลตรวจจากกล้อง</div>
-          </div>
+          </section>
         </section>
+      </main>
 
-        <section class="panel ops-panel" aria-labelledby="opsTitle">
-          <div class="panel-header compact-header">
-            <div>
-              <h2 id="opsTitle">เคสและพิกัดพบ</h2>
-              <p>เมื่อยืนยันแล้ว หน้าเว็บประชาชนจะเห็นสถานะและพิกัดล่าสุดทันที</p>
-            </div>
-            <button class="icon-button" id="exportBtn" type="button" title="ส่งออก CSV" aria-label="ส่งออก CSV">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0-12 4 4m-4-4-4 4M5 17v3h14v-3" /></svg>
-            </button>
-          </div>
-
-          <div class="mini-map" aria-label="แผนที่จำลองหาดใหญ่">
-            <div class="water water-a"></div>
-            <div class="water water-b"></div>
-            <div class="road road-a"></div>
-            <div class="road road-b"></div>
-            <div class="district district-a">คลองอู่ตะเภา</div>
-            <div class="district district-b">ตลาด/ย่านเศรษฐกิจ</div>
-            <div class="district district-c">ศูนย์กู้ภัย</div>
-            <div class="map-pins" id="mapPins"></div>
-          </div>
-
-          <div class="case-list compact-list" id="adminCaseList" aria-live="polite"></div>
-        </section>
-      </section>
-    </main>
-
-    <footer class="drone-footer">
-      <span>Human-in-the-loop</span>
-      <span>ใช้เพื่อเสนอ candidate และประสานงานค้นหาเท่านั้น</span>
-    </footer>
+      <footer class="drone-footer">
+        <span>Human-in-the-loop</span>
+        <span>ระบบต้นแบบควรให้เจ้าหน้าที่ตรวจซ้ำก่อนใช้ภาคสนามจริง</span>
+      </footer>
     </div>
 
     <script src="../site-config.js"></script>

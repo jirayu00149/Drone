@@ -1,5 +1,7 @@
 .drone-site {
-  background: #0f171b;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(36, 95, 147, 0.16), transparent 34%),
+    #0b1215;
   color: #eef5f6;
 }
 
@@ -30,13 +32,9 @@
   font-size: 30px;
 }
 
-.access-panel p {
-  color: #bed0d6;
-}
-
+.access-panel p,
 .access-panel small {
-  color: #91a5ac;
-  line-height: 1.45;
+  color: #bed0d6;
 }
 
 .access-form {
@@ -65,17 +63,18 @@
 }
 
 .drone-topbar {
-  min-height: 72px;
+  min-height: 70px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 14px 20px;
-  background: #101a1f;
+  padding: 12px 18px;
+  background: rgba(12, 21, 25, 0.96);
   border-bottom: 1px solid #26363d;
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 30;
+  backdrop-filter: blur(14px);
 }
 
 .drone-brand {
@@ -126,171 +125,218 @@
   color: #fff;
 }
 
-.drone-nav .theme-switch {
-  box-shadow: none;
-}
-
 .drone-shell {
   display: grid;
-  gap: 0;
-  padding: 0;
+  gap: 18px;
+  padding: 18px;
 }
 
-.drone-hero {
-  min-height: 104px;
+.dji-console {
+  width: min(1540px, 100%);
+  margin: 0 auto;
+}
+
+.controller-face {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px 20px;
+  border: 1px solid #28383e;
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02) 18%, transparent 45%),
+    linear-gradient(180deg, #2c3438, #151d21 42%, #10171b);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 30px 80px rgba(0, 0, 0, 0.36);
+}
+
+.controller-face::before,
+.controller-face::after {
+  content: "";
+  position: absolute;
+  top: 130px;
+  bottom: 28px;
+  width: min(13vw, 170px);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(9, 15, 17, 0.54), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.2));
+  pointer-events: none;
+}
+
+.controller-face::before {
+  left: -26px;
+}
+
+.controller-face::after {
+  right: -26px;
+}
+
+.controller-status-strip {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(220px, 0.7fr) minmax(360px, 1fr) minmax(220px, 0.7fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.flight-pill,
+.mission-inline,
+.telemetry-inline {
+  min-height: 58px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 16px 20px;
-  border: 0;
-  border-bottom: 1px solid #26363d;
-  border-radius: 0;
-  background:
-    linear-gradient(90deg, rgba(15, 118, 110, 0.18), transparent 52%),
-    #0a1418;
-}
-
-.drone-hero h1 {
-  color: #fff;
-  font-size: 34px;
-}
-
-.drone-hero p {
-  max-width: 780px;
-  margin-top: 7px;
-  color: #bed0d6;
-}
-
-.drone-hero {
-  display: none;
-}
-
-.drone-connection {
-  min-width: 230px;
-  display: grid;
-  gap: 5px;
-  justify-items: end;
-  padding: 14px;
-  border: 1px solid #34464d;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(162, 183, 192, 0.18);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(5, 12, 15, 0.48);
 }
 
-.drone-connection span,
-.drone-connection small {
-  color: #9fb1b8;
+.flight-pill {
+  flex-wrap: wrap;
 }
 
-.drone-connection strong {
-  color: #fff;
-  font-size: 22px;
-}
-
-.drone-grid {
-  display: grid;
-  grid-template-columns: minmax(520px, 1fr) minmax(320px, 0.34fr);
-  grid-template-areas:
-    "camera drone"
-    "camera ops"
-    "match match";
-  gap: 18px;
-  padding: 20px;
-  align-items: start;
-}
-
-.drone-site .panel {
-  background: #111b20;
-  border-color: #2b424a;
-  color: #eef7f8;
-  box-shadow: none;
-}
-
-.drone-site .panel p,
-.drone-site label,
-.drone-site .case-main span,
-.drone-site .case-body p,
-.drone-site .found-detail,
-.drone-site .telemetry-grid span {
-  color: #a9bdc4;
-}
-
-.drone-site input,
-.drone-site select,
-.drone-site textarea,
-.drone-site .tool-button,
-.drone-site .command-button,
-.drone-site .small-button,
-.drone-site .icon-button,
-.drone-site .case-card,
-.drone-site .match-card,
-.drone-site .command-item,
-.drone-site .telemetry-grid div {
-  background: #0c171b;
-  border-color: #2f4851;
-  color: #f4fbfb;
-}
-
-.drone-site .panel-header {
-  border-color: #2b424a;
-}
-
-.camera-panel {
-  position: relative;
-  overflow: hidden;
-  min-height: calc(100vh - 230px);
-}
-
-.camera-panel .panel-header {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  right: 16px;
-  z-index: 5;
-  border: 1px solid rgba(128, 215, 207, 0.26);
-  border-radius: 8px;
-  background: rgba(8, 17, 20, 0.76);
-  backdrop-filter: blur(12px);
-}
-
-.camera-panel .panel-header h2 {
+.flight-pill strong,
+.mission-inline strong,
+.telemetry-inline strong {
   color: #ffffff;
 }
 
-.drone-site .camera-frame {
-  min-height: calc(100vh - 330px);
-  height: min(72vh, 720px);
-  margin: 0;
-  border: 0;
-  border-radius: 0;
+.flight-pill span:last-child,
+.mission-inline span,
+.telemetry-inline span {
+  color: #a9bdc4;
+}
+
+.telemetry-inline {
+  justify-content: space-between;
+}
+
+.telemetry-inline div {
+  display: grid;
+  gap: 2px;
+}
+
+.telemetry-inline span {
+  font-size: 11px;
+}
+
+.telemetry-inline strong {
+  font-size: 22px;
+}
+
+.mission-inline {
+  display: grid;
+  justify-items: end;
+}
+
+.remote-screen {
+  aspect-ratio: 16 / 9;
+  min-height: 480px;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border: 10px solid #080d0f;
+  border-radius: 14px;
   background:
     linear-gradient(90deg, rgba(128, 215, 207, 0.06) 1px, transparent 1px),
     linear-gradient(rgba(128, 215, 207, 0.06) 1px, transparent 1px),
     radial-gradient(circle at 50% 50%, rgba(15, 118, 110, 0.12), transparent 34%),
     #071216;
   background-size: 52px 52px, 52px 52px, auto, auto;
-  box-shadow: inset 0 0 0 1px rgba(128, 215, 207, 0.13);
+  box-shadow:
+    inset 0 0 0 1px rgba(128, 215, 207, 0.12),
+    0 18px 38px rgba(0, 0, 0, 0.34);
 }
 
-.camera-frame::before {
+.remote-screen::before {
   content: "";
   position: absolute;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.camera-frame::before {
   inset: 0;
+  z-index: 2;
   background:
-    linear-gradient(90deg, transparent calc(50% - 1px), rgba(128, 215, 207, 0.22) 50%, transparent calc(50% + 1px)),
-    linear-gradient(0deg, transparent calc(50% - 1px), rgba(128, 215, 207, 0.22) 50%, transparent calc(50% + 1px));
-  opacity: 0.28;
+    linear-gradient(90deg, transparent calc(50% - 1px), rgba(128, 215, 207, 0.2) 50%, transparent calc(50% + 1px)),
+    linear-gradient(0deg, transparent calc(50% - 1px), rgba(128, 215, 207, 0.2) 50%, transparent calc(50% + 1px));
+  pointer-events: none;
+  opacity: 0.26;
 }
 
-.camera-panel .toolbar {
-  padding: 14px;
-  border-top: 1px solid #253b43;
-  background: #0d171c;
+#cameraVideo,
+#frameCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+#cameraVideo {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+#cameraVideo.is-live {
+  opacity: 1;
+}
+
+#frameCanvas.is-hidden {
+  opacity: 0;
+}
+
+.screen-top-hud {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 8;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(128, 215, 207, 0.2);
+  border-radius: 8px;
+  background: rgba(8, 17, 20, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.screen-top-hud h1 {
+  color: #ffffff;
+  font-size: 24px;
+}
+
+.screen-top-hud p {
+  max-width: 680px;
+  margin-top: 4px;
+  color: #a9bdc4;
+  font-size: 13px;
+}
+
+.camera-empty {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  padding: 20px;
+  color: #e8eeee;
+  text-align: center;
+}
+
+.camera-empty.is-hidden {
+  display: none;
+}
+
+.camera-empty strong {
+  font-size: 26px;
+}
+
+.camera-empty span {
+  color: #aebdc4;
 }
 
 .face-box-layer {
@@ -352,7 +398,6 @@
   font-size: 19px;
   line-height: 1;
   font-weight: 800;
-  letter-spacing: 0;
 }
 
 .ai-hud-status {
@@ -400,10 +445,302 @@
   color: #7cff8b;
 }
 
-.drone-panel,
-.ops-panel {
-  position: sticky;
-  top: 92px;
+.screen-left-controls,
+.screen-right-controls {
+  position: absolute;
+  z-index: 9;
+  display: grid;
+  gap: 8px;
+}
+
+.screen-left-controls {
+  left: 14px;
+  top: 130px;
+}
+
+.screen-right-controls {
+  right: 14px;
+  top: 130px;
+}
+
+.screen-tool,
+.record-button {
+  width: 50px;
+  min-height: 46px;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  border: 1px solid rgba(190, 208, 214, 0.24);
+  border-radius: 8px;
+  background: rgba(8, 17, 20, 0.68);
+  color: #f3fbfb;
+  font-size: 10px;
+  font-weight: 900;
+  backdrop-filter: blur(8px);
+}
+
+.screen-tool svg,
+.record-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.screen-tool:hover,
+.record-button:hover {
+  background: rgba(15, 118, 110, 0.78);
+}
+
+.record-button {
+  color: #ffdfdc;
+}
+
+.record-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #e11919;
+  box-shadow: 0 0 16px rgba(225, 25, 25, 0.7);
+}
+
+.record-button.is-recording {
+  border-color: #ff8078;
+  background: rgba(105, 15, 15, 0.78);
+}
+
+.screen-bottom-hud {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(150px, 0.32fr) minmax(150px, 0.32fr);
+  gap: 10px;
+  align-items: end;
+}
+
+.dji-threshold,
+.coord-input {
+  min-height: 52px;
+  padding: 9px 10px;
+  border: 1px solid rgba(190, 208, 214, 0.22);
+  border-radius: 8px;
+  background: rgba(8, 17, 20, 0.72);
+  color: #f5fbfb;
+  backdrop-filter: blur(8px);
+}
+
+.dji-threshold {
+  grid-template-columns: auto minmax(90px, 1fr) auto;
+}
+
+.coord-input span,
+.dji-threshold label {
+  color: #9fb1b8;
+  font-size: 11px;
+}
+
+.coord-input input,
+.dji-threshold input {
+  height: 26px;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.dji-threshold output {
+  color: #70f0e5;
+  font-weight: 900;
+}
+
+.controller-deck {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(240px, 0.8fr) minmax(260px, 0.9fr);
+  gap: 18px;
+  align-items: center;
+  padding-top: 6px;
+}
+
+.stick-zone {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  min-height: 130px;
+  padding: 12px;
+  border: 1px solid rgba(162, 183, 192, 0.14);
+  border-radius: 14px;
+  background: rgba(5, 12, 15, 0.38);
+}
+
+.stick {
+  width: 96px;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #303b40 0 28%, #11191d 31% 52%, #2c363a 53% 56%, #0d1417 57%);
+  box-shadow:
+    inset 0 3px 8px rgba(255, 255, 255, 0.12),
+    inset 0 -8px 18px rgba(0, 0, 0, 0.45);
+}
+
+.stick span {
+  width: 36px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 28%, #5d6d73, #141b1f 64%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.42);
+}
+
+.command-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.command-button {
+  min-height: 38px;
+  border-color: #32464e;
+  background: #111b20;
+  color: #f4fbfb;
+  font-weight: 900;
+}
+
+.command-button:hover {
+  background: #0f766e;
+  border-color: #0f766e;
+}
+
+.command-button.danger {
+  background: #2a1414;
+  border-color: #6f2d2a;
+  color: #ffc9c5;
+}
+
+.center-console {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  color: #f6fbfb;
+  text-align: center;
+}
+
+.center-console span {
+  color: #9fb1b8;
+  font-size: 12px;
+}
+
+.status-leds {
+  display: flex;
+  gap: 8px;
+}
+
+.status-leds i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #dbe7ea;
+  box-shadow: 0 0 12px rgba(219, 231, 234, 0.48);
+}
+
+.status-leds i:first-child {
+  background: #31f28a;
+}
+
+.quick-specs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.quick-specs div {
+  min-height: 48px;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  padding: 8px;
+  border: 1px solid rgba(162, 183, 192, 0.16);
+  border-radius: 8px;
+  background: rgba(7, 16, 19, 0.46);
+}
+
+.quick-specs span {
+  color: #9fb1b8;
+  font-size: 11px;
+}
+
+.quick-specs strong {
+  color: #ffffff;
+}
+
+.ops-drawer {
+  width: min(1540px, 100%);
+  display: grid;
+  grid-template-columns: minmax(360px, 0.8fr) minmax(520px, 1.2fr);
+  gap: 14px;
+  margin: 0 auto;
+}
+
+.drone-site .panel {
+  background: #111b20;
+  border-color: #2b424a;
+  color: #eef7f8;
+  box-shadow: none;
+}
+
+.drone-site .panel p,
+.drone-site label,
+.drone-site .case-main span,
+.drone-site .case-body p,
+.drone-site .found-detail {
+  color: #a9bdc4;
+}
+
+.drone-site input,
+.drone-site select,
+.drone-site textarea,
+.drone-site .small-button,
+.drone-site .icon-button,
+.drone-site .case-card,
+.drone-site .match-card,
+.drone-site .command-item {
+  background: #0c171b;
+  border-color: #2f4851;
+  color: #f4fbfb;
+}
+
+.ops-split {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.8fr) minmax(300px, 1fr);
+  gap: 12px;
+  padding: 14px;
+}
+
+.mini-map {
+  height: 100%;
+  min-height: 260px;
+  margin: 0;
+  background:
+    linear-gradient(90deg, rgba(128, 215, 207, 0.09) 1px, transparent 1px),
+    linear-gradient(rgba(128, 215, 207, 0.09) 1px, transparent 1px),
+    #101a1f;
+  background-size: 30px 30px;
+}
+
+.case-list,
+.match-results,
+.command-log {
+  padding: 14px;
+}
+
+.command-log {
+  border-top: 0;
 }
 
 .drone-footer {
@@ -422,18 +759,25 @@
 }
 
 @media (max-width: 1180px) {
-  .drone-grid {
-    grid-template-columns: minmax(360px, 1fr) minmax(280px, 0.85fr);
-    grid-template-areas:
-      "camera drone"
-      "match match"
-      "ops ops";
+  .controller-status-strip,
+  .controller-deck,
+  .ops-drawer,
+  .ops-split {
+    grid-template-columns: 1fr;
+  }
+
+  .remote-screen {
+    min-height: 430px;
+  }
+
+  .controller-face::before,
+  .controller-face::after {
+    display: none;
   }
 }
 
-@media (max-width: 900px) {
-  .drone-topbar,
-  .drone-hero {
+@media (max-width: 760px) {
+  .drone-topbar {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -441,36 +785,62 @@
   .drone-nav {
     width: 100%;
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
-  .drone-connection {
+  .drone-nav-link {
     width: 100%;
-    justify-items: start;
   }
 
-  .drone-grid {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "camera"
-      "drone"
-      "match"
-      "ops";
+  .drone-shell {
+    padding: 10px;
+  }
+
+  .controller-face {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .remote-screen {
+    min-height: 440px;
+    border-width: 6px;
+  }
+
+  .screen-top-hud {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .screen-left-controls {
+    left: 8px;
+    top: 132px;
+  }
+
+  .screen-right-controls {
+    right: 8px;
+    top: 132px;
+  }
+
+  .screen-tool,
+  .record-button {
+    width: 42px;
+    min-height: 40px;
   }
 
   .ai-detection-hud {
     top: auto;
-    right: 10px;
-    left: auto;
-    bottom: 10px;
-    width: min(220px, calc(100% - 20px));
+    right: 8px;
+    bottom: 90px;
+    width: min(220px, calc(100% - 16px));
   }
 
-  .ai-hud-title {
-    font-size: 18px;
+  .screen-bottom-hud {
+    grid-template-columns: 1fr;
   }
 
-  .ai-hud-row {
-    font-size: 12px;
+  .stick-zone,
+  .camera-stick-zone {
+    grid-template-columns: 1fr;
+    justify-items: center;
   }
 }
