@@ -59,9 +59,13 @@
     adminCaseList: document.querySelector("#adminCaseList"),
     mapPins: document.querySelector("#mapPins"),
     exportBtn: document.querySelector("#exportBtn"),
+    fullscreenBtn: document.querySelector("#fullscreenBtn"),
+    droneApp: document.querySelector("[data-drone-app]"),
     missionCount: document.querySelector("#missionCount"),
     lastSync: document.querySelector("#lastSync")
   };
+  let pageFullscreenActive = false;
+  let nativeFullscreenActive = false;
 
   function updateScanStatus(text, tone = "") {
     els.scanStatus.textContent = text;
@@ -804,6 +808,92 @@
     URL.revokeObjectURL(url);
   }
 
+  function setFullscreenState(active) {
+    pageFullscreenActive = active;
+    document.body.classList.toggle("is-fullscreen-view", active);
+    if (!els.fullscreenBtn) return;
+    els.fullscreenBtn.classList.toggle("is-active", active);
+    els.fullscreenBtn.setAttribute("aria-pressed", active ? "true" : "false");
+    els.fullscreenBtn.setAttribute("title", active ? "ออกจากเต็มจอ" : "เต็มจอ");
+    els.fullscreenBtn.setAttribute("aria-label", active ? "ออกจากเต็มจอ" : "เต็มจอ");
+    const label = els.fullscreenBtn.querySelector("span");
+    if (label) label.textContent = active ? "EXIT" : "FULL";
+  }
+
+  function getFullscreenElement() {
+    return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement || null;
+  }
+
+  async function requestNativeFullscreen(target) {
+    if (target.requestFullscreen) {
+      try {
+        await target.requestFullscreen({ navigationUI: "hide" });
+        return;
+      } catch {
+        await target.requestFullscreen();
+        return;
+      }
+    }
+
+    const prefixedRequest = target.webkitRequestFullscreen || target.msRequestFullscreen;
+    if (prefixedRequest) {
+      await prefixedRequest.call(target);
+    }
+  }
+
+  async function exitNativeFullscreen() {
+    const exitFullscreen =
+      document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+    if (exitFullscreen) {
+      await exitFullscreen.call(document);
+    }
+  }
+
+  function syncFullscreenState() {
+    if (getFullscreenElement()) {
+      nativeFullscreenActive = true;
+      setFullscreenState(true);
+      return;
+    }
+
+    if (nativeFullscreenActive) {
+      nativeFullscreenActive = false;
+      setFullscreenState(false);
+      return;
+    }
+
+    setFullscreenState(pageFullscreenActive);
+  }
+
+  async function toggleFullscreen() {
+    const target = document.documentElement || els.droneApp;
+    const entering = !pageFullscreenActive && !getFullscreenElement();
+
+    if (!entering) {
+      setFullscreenState(false);
+      nativeFullscreenActive = false;
+      if (getFullscreenElement()) {
+        try {
+          await exitNativeFullscreen();
+        } catch (error) {
+          console.warn(error);
+        }
+      }
+      return;
+    }
+
+    setFullscreenState(true);
+    try {
+      if (!getFullscreenElement()) {
+        await requestNativeFullscreen(target);
+        nativeFullscreenActive = Boolean(getFullscreenElement());
+      }
+    } catch (error) {
+      console.warn(error);
+    }
+    syncFullscreenState();
+  }
+
   function bindEvents() {
     els.startCameraBtn.addEventListener("click", startCamera);
     els.captureBtn.addEventListener("click", captureFromVideo);
@@ -812,6 +902,15 @@
     els.probeUpload.addEventListener("change", handleUpload);
     els.gpsBtn.addEventListener("click", useDeviceLocation);
     els.exportBtn.addEventListener("click", exportLogs);
+    els.fullscreenBtn?.addEventListener("click", toggleFullscreen);
+    document.addEventListener("fullscreenchange", syncFullscreenState);
+    document.addEventListener("webkitfullscreenchange", syncFullscreenState);
+    document.addEventListener("MSFullscreenChange", syncFullscreenState);
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && pageFullscreenActive && !getFullscreenElement()) {
+        setFullscreenState(false);
+      }
+    });
     els.thresholdRange.addEventListener("input", () => {
       els.thresholdValue.textContent = `${els.thresholdRange.value}%`;
       if (state.lastProbeVector) runMatch(state.lastProbeVector);

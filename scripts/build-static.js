@@ -119,6 +119,7 @@ function buildDrone() {
   fs.mkdirSync(droneOutDir, { recursive: true });
   copyEntries(droneEntries, droneOutDir);
   copyRecursive(path.join(root, "drone", "drone.css"), path.join(droneOutDir, "drone.css"));
+  copyRecursive(path.join(root, "drone", "manifest.webmanifest"), path.join(droneOutDir, "manifest.webmanifest"));
   writeText(droneOutDir, "site-config.js", configJs());
   writeText(
     droneOutDir,

@@ -2,7 +2,13 @@
 <html lang="th">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#02080a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Drone Control" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="./manifest.webmanifest" />
     <title>ห้องควบคุมโดรน | โดรนพิทักษ์น้ำท่วม</title>
     <link rel="stylesheet" href="../styles.css" />
     <link rel="stylesheet" href="./drone.css" />
@@ -62,13 +68,22 @@
             </div>
 
             <section class="remote-screen camera-panel" aria-labelledby="cameraTitle">
-              <div class="screen-top-hud">
-                <div>
-                  <span class="eyebrow">AI Face Track</span>
-                  <h1 id="cameraTitle">กล้องตรวจใบหน้า</h1>
-                  <p>เปิดกล้องแล้วระบบจะจับเฟรม เทียบฐานข้อมูล และยืนยันเมื่อถึง threshold อัตโนมัติ</p>
+              <div class="screen-top-hud dji-flight-top">
+                <div class="dji-top-left">
+                  <span class="dji-back" aria-hidden="true">‹</span>
+                  <span class="dji-flight-mode">N Mode</span>
+                  <span class="dji-flight-state">In Flight</span>
                 </div>
-                <span class="scan-status" id="scanStatus">พร้อมสแกน</span>
+                <h1 id="cameraTitle" class="dji-sr-only">Drone camera view</h1>
+                <div class="dji-top-center">
+                  <span>HY-DRONE-01</span>
+                  <span class="scan-status" id="scanStatus">Ready</span>
+                </div>
+                <div class="dji-top-right">
+                  <span>GPS 18</span>
+                  <span>RC 96%</span>
+                  <span>24.1V</span>
+                </div>
               </div>
 
               <video id="cameraVideo" playsinline muted autoplay></video>
@@ -127,6 +142,10 @@
                 </button>
                 <button class="screen-tool" id="exportBtn" type="button" title="ส่งออก CSV" aria-label="ส่งออก CSV">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0-12 4 4m-4-4-4 4M5 17v3h14v-3" /></svg>
+                </button>
+                <button class="screen-tool fullscreen-button" id="fullscreenBtn" type="button" title="เต็มจอ" aria-label="เต็มจอ">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5M9 9 3 3M15 9l6-6M15 15l6 6M9 15l-6 6" /></svg>
+                  <span>FULL</span>
                 </button>
               </div>
 

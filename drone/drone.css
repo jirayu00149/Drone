@@ -992,3 +992,748 @@
     right: 50px;
   }
 }
+
+/* Clean mission display mode. Keep this override at the end so the
+   original dashboard can stay intact while the drone screen gets a
+   presentation/fullscreen layout. */
+html,
+body.drone-site {
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+body.drone-site {
+  margin: 0;
+  overscroll-behavior: none;
+}
+
+.drone-app-shell {
+  --drone-topbar-height: 0px;
+  --drone-status-height: 0px;
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.drone-site .floating-theme-control {
+  display: none !important;
+}
+
+.drone-app-shell .drone-topbar,
+.screen-console .controller-status-strip,
+.screen-console .screen-bottom-hud,
+.drone-app-shell .ops-drawer,
+.drone-app-shell .drone-footer {
+  display: none !important;
+}
+
+.screen-only-shell {
+  position: fixed;
+  inset: 0;
+  display: block;
+  width: 100vw;
+  min-height: 100vh;
+  height: 100vh;
+  padding: 0;
+  overflow: hidden;
+}
+
+.screen-console {
+  position: fixed;
+  inset: 0;
+  display: block;
+  width: 100vw;
+  max-width: none;
+  height: 100vh;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.screen-console .controller-status-strip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 12;
+  width: auto;
+  min-height: var(--drone-status-height);
+  grid-template-columns: minmax(220px, 0.7fr) minmax(360px, 1fr) minmax(220px, 0.7fr);
+  padding: 8px clamp(12px, 3vw, 40px);
+  background: rgba(5, 14, 17, 0.94);
+  border-bottom: 1px solid rgba(128, 215, 207, 0.18);
+  pointer-events: auto;
+}
+
+.screen-console .remote-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  margin: 0 !important;
+  border: 0;
+  border-radius: 0;
+  aspect-ratio: auto;
+}
+
+.screen-console .screen-top-hud {
+  display: none;
+}
+
+.screen-console .screen-left-controls,
+.screen-console .screen-right-controls {
+  top: 22px;
+}
+
+.screen-console .screen-left-controls {
+  left: 18px;
+}
+
+.screen-console .screen-right-controls {
+  right: 18px;
+}
+
+.screen-console .screen-bottom-hud {
+  left: 88px;
+  right: 88px;
+  bottom: 14px;
+  transition: opacity 160ms ease, transform 160ms ease;
+  opacity: 0.36;
+}
+
+.screen-console .screen-bottom-hud:hover,
+.screen-console .screen-bottom-hud:focus-within {
+  opacity: 1;
+}
+
+.fullscreen-button.is-active {
+  border-color: rgba(128, 255, 246, 0.72);
+  background: rgba(15, 118, 110, 0.78);
+}
+
+body.is-fullscreen-view {
+  overflow: hidden;
+  background: #02080a;
+}
+
+body.is-fullscreen-view .drone-app-shell {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #02080a;
+}
+
+body.is-fullscreen-view .drone-topbar,
+body.is-fullscreen-view .controller-status-strip,
+body.is-fullscreen-view .screen-top-hud,
+body.is-fullscreen-view .screen-bottom-hud,
+body.is-fullscreen-view .ai-detection-hud,
+body.is-fullscreen-view .ops-drawer,
+body.is-fullscreen-view .drone-footer {
+  display: none !important;
+}
+
+body.is-fullscreen-view .screen-only-shell,
+body.is-fullscreen-view .screen-console {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  padding: 0;
+}
+
+body.is-fullscreen-view .screen-console {
+  display: block;
+}
+
+body.is-fullscreen-view .screen-console .remote-screen {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  margin: 0 !important;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+body.is-fullscreen-view #cameraVideo,
+body.is-fullscreen-view #frameCanvas {
+  object-fit: cover;
+}
+
+body.is-fullscreen-view .screen-right-controls {
+  top: 22px;
+  right: 18px;
+  z-index: 40;
+  display: flex;
+  opacity: 1;
+}
+
+body.is-fullscreen-view .screen-left-controls {
+  top: 22px;
+  left: 18px;
+  z-index: 40;
+  display: flex !important;
+}
+
+body.is-fullscreen-view .screen-right-controls .screen-tool,
+body.is-fullscreen-view .screen-right-controls .record-button {
+  display: inline-flex;
+}
+
+@supports (height: 100svh) {
+  .drone-app-shell,
+  .screen-only-shell,
+  .screen-console {
+    height: 100svh;
+    min-height: 100svh;
+  }
+
+  body.is-fullscreen-view .drone-app-shell,
+  body.is-fullscreen-view .screen-only-shell,
+  body.is-fullscreen-view .screen-console {
+    height: 100svh;
+    min-height: 100svh;
+  }
+}
+
+@media (max-width: 960px) {
+  .drone-app-shell {
+    --drone-status-height: 0px;
+  }
+
+  .screen-console {
+    height: 100vh;
+    min-height: 100vh;
+  }
+
+  .screen-console .controller-status-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .screen-console .screen-left-controls,
+  .screen-console .screen-right-controls {
+    top: 14px;
+  }
+
+  body.is-fullscreen-view .screen-left-controls,
+  body.is-fullscreen-view .screen-right-controls {
+    top: 14px;
+  }
+
+  .screen-console .screen-bottom-hud {
+    left: 62px;
+    right: 62px;
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Final drone viewport override: keep the original controls and make the
+   camera surface fill every pixel the browser gives the page. */
+html,
+body.drone-site,
+body.drone-site .drone-app-shell,
+body.drone-site .screen-only-shell,
+body.drone-site .screen-console {
+  width: 100vw !important;
+  max-width: none !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+body.drone-site .drone-app-shell,
+body.drone-site .screen-only-shell,
+body.drone-site .screen-console {
+  position: fixed !important;
+  inset: 0 !important;
+}
+
+body.drone-site .remote-screen,
+body.is-fullscreen-view .screen-console .remote-screen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  max-width: none !important;
+  height: 100vh !important;
+  min-height: 100vh !important;
+  max-height: none !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  aspect-ratio: auto !important;
+}
+
+@supports (height: 100dvh) {
+  html,
+  body.drone-site,
+  body.drone-site .drone-app-shell,
+  body.drone-site .screen-only-shell,
+  body.drone-site .screen-console,
+  body.drone-site .remote-screen,
+  body.is-fullscreen-view .screen-console .remote-screen {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+  }
+}
+
+body.drone-site .screen-left-controls,
+body.drone-site .screen-right-controls,
+body.is-fullscreen-view .screen-left-controls,
+body.is-fullscreen-view .screen-right-controls {
+  top: max(14px, env(safe-area-inset-top)) !important;
+  z-index: 40 !important;
+  display: grid !important;
+  gap: 8px !important;
+}
+
+body.drone-site .screen-left-controls,
+body.is-fullscreen-view .screen-left-controls {
+  left: max(14px, env(safe-area-inset-left)) !important;
+  right: auto !important;
+}
+
+body.drone-site .screen-right-controls,
+body.is-fullscreen-view .screen-right-controls {
+  right: max(14px, env(safe-area-inset-right)) !important;
+  left: auto !important;
+}
+
+body.drone-site .screen-tool,
+body.drone-site .record-button,
+body.is-fullscreen-view .screen-console .screen-tool,
+body.is-fullscreen-view .screen-console .record-button {
+  width: 50px !important;
+  min-height: 46px !important;
+  display: grid !important;
+  place-items: center !important;
+  gap: 2px !important;
+  padding: 0 !important;
+}
+
+body.drone-site .record-dot {
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 50% !important;
+}
+
+body.drone-site .record-button {
+  grid-template-columns: 1fr !important;
+}
+
+@media (max-width: 760px) {
+  body.drone-site .screen-tool,
+  body.drone-site .record-button,
+  body.is-fullscreen-view .screen-console .screen-tool,
+  body.is-fullscreen-view .screen-console .record-button {
+    width: 46px !important;
+    min-height: 42px !important;
+  }
+}
+
+/* DJI-inspired flight deck. Keep this last: it is the intentional final
+   visual pass for the live drone screen. */
+body.drone-site {
+  background: #05090b !important;
+  color: #f6fbfc;
+  font-family: Inter, "Segoe UI", system-ui, sans-serif;
+}
+
+body.drone-site .drone-topbar,
+body.drone-site .controller-status-strip,
+body.drone-site .ops-drawer,
+body.drone-site .drone-footer,
+body.drone-site .floating-theme-control {
+  display: none !important;
+}
+
+body.drone-site .remote-screen {
+  background:
+    linear-gradient(180deg, rgba(5, 11, 13, 0.34), rgba(5, 10, 12, 0.08) 22%, rgba(5, 10, 12, 0.24) 100%),
+    radial-gradient(circle at 48% 42%, rgba(87, 190, 208, 0.22), transparent 34%),
+    linear-gradient(135deg, rgba(14, 52, 62, 0.86), rgba(7, 21, 26, 0.98) 54%, rgba(3, 9, 12, 1));
+  box-shadow: none !important;
+}
+
+body.drone-site .remote-screen::before {
+  z-index: 2;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 1px), rgba(255, 255, 255, 0.13) 50%, transparent calc(50% + 1px)),
+    linear-gradient(0deg, transparent calc(50% - 1px), rgba(255, 255, 255, 0.13) 50%, transparent calc(50% + 1px)),
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: auto, auto, 64px 64px, 64px 64px;
+  opacity: 0.72;
+}
+
+body.drone-site .remote-screen::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  box-shadow:
+    0 -34px 0 -21px rgba(255, 255, 255, 0.26),
+    0 34px 0 -21px rgba(255, 255, 255, 0.26),
+    -34px 0 0 -21px rgba(255, 255, 255, 0.26),
+    34px 0 0 -21px rgba(255, 255, 255, 0.26);
+  pointer-events: none;
+}
+
+body.drone-site #cameraVideo,
+body.drone-site #frameCanvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+body.drone-site .dji-flight-top,
+body.is-fullscreen-view .dji-flight-top {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  z-index: 60 !important;
+  display: grid !important;
+  grid-template-columns: minmax(170px, 1fr) auto minmax(170px, 1fr);
+  align-items: center;
+  min-height: 38px;
+  padding: max(5px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 5px max(14px, env(safe-area-inset-left));
+  background: linear-gradient(180deg, rgba(2, 5, 7, 0.7), rgba(2, 5, 7, 0));
+  border: 0;
+  color: rgba(245, 250, 251, 0.92);
+  font-size: 12px;
+  line-height: 1;
+  pointer-events: none;
+}
+
+body.drone-site .dji-top-left,
+body.drone-site .dji-top-center,
+body.drone-site .dji-top-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+body.drone-site .dji-top-center {
+  justify-content: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(6, 11, 13, 0.42);
+  backdrop-filter: blur(12px);
+}
+
+body.drone-site .dji-top-right {
+  justify-content: flex-end;
+}
+
+body.drone-site .dji-back {
+  font-size: 22px;
+  line-height: 0.7;
+}
+
+body.drone-site .dji-flight-mode,
+body.drone-site .dji-flight-state,
+body.drone-site .dji-top-right span,
+body.drone-site .dji-top-center span {
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.68);
+  white-space: nowrap;
+}
+
+body.drone-site .dji-flight-state,
+body.drone-site .dji-top-right span:first-child,
+body.drone-site .dji-top-center .scan-status {
+  color: #74f8a0;
+}
+
+body.drone-site .dji-top-center .scan-status {
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #74f8a0 !important;
+}
+
+body.drone-site .dji-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+body.drone-site .screen-left-controls,
+body.is-fullscreen-view .screen-left-controls {
+  top: calc(max(14px, env(safe-area-inset-top)) + 48px) !important;
+  left: max(14px, env(safe-area-inset-left)) !important;
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 9px !important;
+}
+
+body.drone-site .screen-right-controls,
+body.is-fullscreen-view .screen-right-controls {
+  top: calc(50vh - 112px) !important;
+  right: max(16px, env(safe-area-inset-right)) !important;
+  left: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center;
+  gap: 12px !important;
+  transform: none !important;
+}
+
+@supports (height: 100dvh) {
+  body.drone-site .screen-right-controls,
+  body.is-fullscreen-view .screen-right-controls {
+    top: calc(50dvh - 112px) !important;
+  }
+}
+
+body.drone-site .screen-tool,
+body.drone-site .record-button,
+body.is-fullscreen-view .screen-console .screen-tool,
+body.is-fullscreen-view .screen-console .record-button {
+  width: 44px !important;
+  min-height: 44px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  background: rgba(8, 13, 16, 0.42) !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(16px);
+  transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+body.drone-site .screen-tool:hover,
+body.drone-site .record-button:hover {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: rgba(255, 255, 255, 0.42) !important;
+  transform: scale(1.04);
+}
+
+body.drone-site .screen-tool span,
+body.drone-site .file-tool span {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+body.drone-site .screen-tool svg,
+body.drone-site .record-button svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.2;
+}
+
+body.drone-site .record-button,
+body.is-fullscreen-view .screen-console .record-button {
+  width: 56px !important;
+  min-height: 56px !important;
+  padding: 0 !important;
+  background: rgba(8, 13, 16, 0.48) !important;
+}
+
+body.drone-site .record-button #recordLabel {
+  display: none !important;
+}
+
+body.drone-site .record-dot {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 50% !important;
+  background: #ef2323 !important;
+  box-shadow:
+    0 0 0 5px rgba(255, 255, 255, 0.88) inset,
+    0 0 22px rgba(239, 35, 35, 0.72) !important;
+}
+
+body.drone-site .record-button.is-recording .record-dot {
+  border-radius: 9px !important;
+  width: 26px !important;
+  height: 26px !important;
+}
+
+body.drone-site #captureBtn svg {
+  display: none;
+}
+
+body.drone-site #captureBtn::before {
+  content: "";
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+body.drone-site .fullscreen-button {
+  position: fixed !important;
+  top: 58px !important;
+  right: max(14px, env(safe-area-inset-right)) !important;
+  z-index: 65 !important;
+  width: auto !important;
+  min-width: 54px !important;
+  min-height: 34px !important;
+  padding: 0 11px !important;
+  border-radius: 999px !important;
+  background: rgba(9, 126, 118, 0.72) !important;
+  transform: none !important;
+}
+
+body.drone-site .fullscreen-button svg {
+  display: none;
+}
+
+body.drone-site .fullscreen-button span {
+  font-size: 10px;
+}
+
+body.drone-site .screen-bottom-hud,
+body.is-fullscreen-view .screen-bottom-hud {
+  position: fixed !important;
+  left: max(14px, env(safe-area-inset-left)) !important;
+  right: max(76px, calc(env(safe-area-inset-right) + 76px)) !important;
+  bottom: max(12px, env(safe-area-inset-bottom)) !important;
+  z-index: 50 !important;
+  display: grid !important;
+  grid-template-columns: minmax(230px, 420px) minmax(96px, 150px) minmax(96px, 150px);
+  gap: 10px;
+  align-items: end;
+  opacity: 0.92 !important;
+  pointer-events: auto;
+}
+
+body.drone-site .threshold-row,
+body.drone-site .coord-input {
+  min-height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(4, 8, 10, 0.44);
+  backdrop-filter: blur(16px);
+}
+
+body.drone-site .threshold-row label,
+body.drone-site .coord-input span {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 10px;
+}
+
+body.drone-site .coord-input input {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.94);
+  font-weight: 800;
+}
+
+body.drone-site .camera-empty {
+  z-index: 4;
+  transform: translateY(8px);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.78);
+}
+
+body.drone-site .camera-empty strong {
+  font-size: clamp(24px, 4vw, 38px);
+  font-weight: 800;
+}
+
+body.drone-site .camera-empty span {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@media (max-width: 860px) {
+  body.drone-site .dji-flight-top,
+  body.is-fullscreen-view .dji-flight-top {
+    grid-template-columns: 1fr auto;
+  }
+
+  body.drone-site .dji-top-center {
+    display: none;
+  }
+
+  body.drone-site .dji-top-right {
+    gap: 7px;
+  }
+
+  body.drone-site .screen-left-controls,
+  body.is-fullscreen-view .screen-left-controls {
+    top: calc(max(10px, env(safe-area-inset-top)) + 44px) !important;
+  }
+
+  body.drone-site .screen-right-controls,
+  body.is-fullscreen-view .screen-right-controls {
+    right: max(10px, env(safe-area-inset-right)) !important;
+    gap: 9px !important;
+  }
+
+  body.drone-site .fullscreen-button {
+    top: 54px !important;
+    right: max(10px, env(safe-area-inset-right)) !important;
+  }
+
+  body.drone-site .screen-tool,
+  body.drone-site .record-button,
+  body.is-fullscreen-view .screen-console .screen-tool,
+  body.is-fullscreen-view .screen-console .record-button {
+    width: 40px !important;
+    min-height: 40px !important;
+  }
+
+  body.drone-site .record-button,
+  body.is-fullscreen-view .screen-console .record-button {
+    width: 52px !important;
+    min-height: 52px !important;
+  }
+
+  body.drone-site .screen-bottom-hud,
+  body.is-fullscreen-view .screen-bottom-hud {
+    grid-template-columns: minmax(190px, 1fr) 92px 92px;
+    right: 72px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  body.drone-site .dji-top-right span:nth-child(2) {
+    display: none;
+  }
+
+  body.drone-site .screen-left-controls,
+  body.is-fullscreen-view .screen-left-controls {
+    gap: 6px !important;
+  }
+
+  body.drone-site .screen-bottom-hud,
+  body.is-fullscreen-view .screen-bottom-hud {
+    grid-template-columns: 1fr;
+    max-width: 320px;
+  }
+
+  body.drone-site .coord-input {
+    display: none;
+  }
+}
