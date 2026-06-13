@@ -843,3 +843,152 @@
     justify-items: center;
   }
 }
+
+.screen-only-shell {
+  min-height: calc(100vh - 70px);
+  align-content: start;
+  padding: clamp(10px, 1.5vw, 20px);
+}
+
+.screen-console {
+  position: relative;
+  width: min(1480px, 100%, 132vh);
+}
+
+.screen-console .remote-screen {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 16 / 9;
+  border-width: 8px;
+  border-radius: 10px;
+}
+
+.screen-console .controller-status-strip {
+  position: absolute;
+  top: 92px;
+  left: 72px;
+  right: 72px;
+  z-index: 9;
+  grid-template-columns: minmax(170px, 0.65fr) minmax(300px, 1fr) minmax(190px, 0.7fr);
+  gap: 8px;
+  pointer-events: none;
+}
+
+.screen-console .flight-pill,
+.screen-console .mission-inline,
+.screen-console .telemetry-inline {
+  min-height: 42px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  background: rgba(8, 17, 20, 0.74);
+  backdrop-filter: blur(8px);
+}
+
+.screen-console .telemetry-inline strong {
+  font-size: 18px;
+}
+
+.screen-console .telemetry-inline span,
+.screen-console .flight-pill span:last-child,
+.screen-console .mission-inline span {
+  font-size: 10px;
+}
+
+.screen-console .mission-inline strong {
+  font-size: 12px;
+}
+
+.screen-console .screen-top-hud {
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  min-height: 72px;
+  padding: 10px 12px;
+}
+
+.screen-console .screen-top-hud h1 {
+  font-size: 22px;
+}
+
+.screen-console .screen-top-hud p {
+  font-size: 12px;
+}
+
+.screen-console .screen-left-controls,
+.screen-console .screen-right-controls {
+  top: 158px;
+}
+
+.screen-console .screen-left-controls {
+  left: 14px;
+}
+
+.screen-console .screen-right-controls {
+  right: 14px;
+}
+
+.screen-console .ai-detection-hud {
+  top: 158px;
+  right: 76px;
+}
+
+.screen-console .screen-bottom-hud {
+  left: 72px;
+  right: 72px;
+  bottom: 14px;
+}
+
+.screen-console .controller-deck,
+.screen-only-shell .ops-drawer,
+.drone-footer {
+  display: none !important;
+}
+
+@media (max-width: 960px) {
+  .screen-console .remote-screen {
+    height: auto;
+    min-height: 500px;
+  }
+
+  .screen-console .controller-status-strip {
+    top: 116px;
+    left: 62px;
+    right: 62px;
+    grid-template-columns: 1fr;
+  }
+
+  .screen-console .screen-left-controls,
+  .screen-console .screen-right-controls {
+    top: 250px;
+  }
+
+  .screen-console .ai-detection-hud {
+    top: auto;
+    right: 10px;
+    bottom: 96px;
+  }
+
+  .screen-console .screen-bottom-hud {
+    left: 62px;
+    right: 62px;
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .screen-only-shell {
+    padding: 8px;
+  }
+
+  .screen-console .remote-screen {
+    min-height: 560px;
+    border-width: 5px;
+  }
+
+  .screen-console .controller-status-strip,
+  .screen-console .screen-bottom-hud {
+    left: 50px;
+    right: 50px;
+  }
+}

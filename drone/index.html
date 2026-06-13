@@ -42,9 +42,8 @@
         </nav>
       </header>
 
-      <main class="drone-shell">
-        <section class="dji-console" aria-labelledby="cameraTitle">
-          <div class="controller-face">
+      <main class="drone-shell screen-only-shell">
+        <section class="dji-console screen-console" aria-labelledby="cameraTitle">
             <div class="controller-status-strip">
               <div class="flight-pill">
                 <span class="status-chip good" id="droneOnline">ออนไลน์</span>
@@ -148,32 +147,6 @@
               </div>
             </section>
 
-            <div class="controller-deck">
-              <div class="stick-zone">
-                <div class="stick" aria-hidden="true"><span></span></div>
-                <div class="command-grid" aria-label="คำสั่งโดรน">
-                  <button class="command-button" type="button" data-command="กลับฐาน" data-mode="Return">RTH</button>
-                  <button class="command-button" type="button" data-command="หยุดนิ่ง" data-mode="Hover">Hover</button>
-                  <button class="command-button danger" type="button" data-command="ลงจอด" data-mode="Landing">Land</button>
-                  <button class="command-button" type="button" data-command="ลาดตระเวน" data-mode="Patrol">Patrol</button>
-                </div>
-              </div>
-
-              <div class="center-console">
-                <strong>FLOOD GUARD REMOTE</strong>
-                <span>AI auto capture • auto confirm • GPS log</span>
-                <div class="status-leds" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-              </div>
-
-              <div class="stick-zone camera-stick-zone">
-                <div class="stick" aria-hidden="true"><span></span></div>
-                <div class="quick-specs">
-                  <div><span>Zoom</span><strong>1.0x</strong></div>
-                  <div><span>Gimbal</span><strong>-12°</strong></div>
-                </div>
-              </div>
-            </div>
-          </div>
         </section>
 
         <section class="ops-drawer">
