@@ -83,6 +83,20 @@
     updateAiHud({ visible: false });
   }
 
+  function compactFaceBox(box, sourceWidth, sourceHeight) {
+    const nextWidth = R.clamp(box.width * 0.7, Math.min(box.width, 42), sourceWidth);
+    const nextHeight = R.clamp(box.height * 0.74, Math.min(box.height, 54), sourceHeight);
+    const centerX = box.x + box.width / 2;
+    const centerY = box.y + box.height * 0.48;
+
+    return {
+      x: R.clamp(centerX - nextWidth / 2, 0, sourceWidth - nextWidth),
+      y: R.clamp(centerY - nextHeight / 2, 0, sourceHeight - nextHeight),
+      width: nextWidth,
+      height: nextHeight
+    };
+  }
+
   function renderFaceBoxes(boxes, sourceWidth = els.frameCanvas.width, sourceHeight = els.frameCanvas.height, options = {}) {
     if (!els.faceBoxes) return;
     if (!boxes.length) {
@@ -97,10 +111,11 @@
 
     els.faceBoxes.innerHTML = boxes
       .map((box) => {
-        const x = R.clamp(box.x * scaleX, 0, layerWidth - 12);
-        const y = R.clamp(box.y * scaleY, 0, layerHeight - 12);
-        const width = R.clamp(box.width * scaleX, 24, layerWidth - x);
-        const height = R.clamp(box.height * scaleY, 24, layerHeight - y);
+        const faceBox = compactFaceBox(box, sourceWidth, sourceHeight);
+        const x = R.clamp(faceBox.x * scaleX, 0, layerWidth - 12);
+        const y = R.clamp(faceBox.y * scaleY, 0, layerHeight - 12);
+        const width = R.clamp(faceBox.width * scaleX, 20, layerWidth - x);
+        const height = R.clamp(faceBox.height * scaleY, 24, layerHeight - y);
         return `<span class="face-box" style="left:${x}px; top:${y}px; width:${width}px; height:${height}px;"></span>`;
       })
       .join("");
@@ -212,16 +227,16 @@
     if (best) {
       const skinWidth = Math.max(best.right - best.left + 1, 12);
       const skinHeight = Math.max(best.bottom - best.top + 1, 12);
-      const boxWidth = Math.max(skinWidth * 1.8, sampleWidth * 0.13);
-      const boxHeight = Math.max(skinHeight * 2.15, sampleHeight * 0.24);
+      const boxWidth = Math.max(skinWidth * 1.55, sampleWidth * 0.11);
+      const boxHeight = Math.max(skinHeight * 1.85, sampleHeight * 0.2);
       const x = (best.cx - boxWidth / 2) * (source.width / sampleWidth);
-      const y = (best.cy - boxHeight * 0.42) * (source.height / sampleHeight);
+      const y = (best.cy - boxHeight * 0.46) * (source.height / sampleHeight);
       return [
         {
           x: R.clamp(x, 0, source.width - 24),
           y: R.clamp(y, 0, source.height - 24),
-          width: R.clamp(boxWidth * (source.width / sampleWidth), 72, source.width),
-          height: R.clamp(boxHeight * (source.height / sampleHeight), 92, source.height)
+          width: R.clamp(boxWidth * (source.width / sampleWidth), 58, source.width),
+          height: R.clamp(boxHeight * (source.height / sampleHeight), 72, source.height)
         }
       ];
     }
@@ -452,7 +467,7 @@
     els.cameraVideo.classList.remove("is-live");
     els.frameCanvas.classList.remove("is-hidden");
     els.cameraEmpty.classList.add("is-hidden");
-    renderFaceBoxes([{ x: faceX - 55, y: faceY - 56, width: 110, height: 138 }]);
+    renderFaceBoxes([{ x: faceX - 44, y: faceY - 48, width: 88, height: 112 }]);
 
     state.people = R.loadPeople();
     const target = state.people.find((person) => person.status !== "found") || state.people[0];
