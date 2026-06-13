@@ -1,4 +1,4 @@
-# Hatyai Drone Rescue Web Prototype
+# โดรนพิทักษ์น้ำท่วม Web Prototype
 
 เว็บต้นแบบสำหรับแยกงานฝั่งประชาชนออกจากระบบปฏิบัติการโดรน โดยทั้งสองเว็บยังเชื่อมข้อมูลชุดเดียวกันผ่าน localStorage เพื่อทดลอง flow ตรวจสอบใบหน้าและอัปเดตสถานะ
 
@@ -7,20 +7,20 @@
 - `index.html` หน้าแรกและประกาศก่อนตรวจรายชื่อ
 - `search.html` หน้าตรวจรายชื่อและสถานะผู้สูญหาย
 - `report.html` หน้าแจ้งผู้สูญหายและแนบรูปใบหน้าอ้างอิง
-- `drone/index.html` เว็บ Drone Ops แยกสำหรับทีมโดรน ใช้สแกน candidate ตรวจใบหน้า บันทึกพิกัด และส่งสถานะกลับเว็บประชาชน
+- `drone/index.html` ห้องควบคุมโดรนแยกสำหรับทีมโดรน ใช้สแกน candidate ตรวจใบหน้า บันทึกพิกัด และส่งสถานะกลับเว็บประชาชน
 - `pilot.html` และ `admin.html` เป็นลิงก์เก่าที่ redirect ไป `drone/index.html`
 - `shared.js` logic กลางสำหรับข้อมูลเคส, localStorage, embedding จำลอง, สถานะ และ rescue log
 - `public.js` logic สำหรับหน้า public
-- `admin.js` logic สำหรับเว็บ Drone Ops
+- `admin.js` logic สำหรับห้องควบคุมโดรน
 - `styles.css` style ของเว็บประชาชนและ component กลาง
-- `drone/drone.css` style เฉพาะเว็บ Drone Ops
+- `drone/drone.css` style เฉพาะห้องควบคุมโดรน
 
 ## URL
 
 - หน้าแรก: `http://127.0.0.1:4174/`
 - ตรวจรายชื่อ: `http://127.0.0.1:4174/search.html`
 - แจ้งผู้สูญหาย: `http://127.0.0.1:4174/report.html`
-- Drone Ops: `http://127.0.0.1:4174/drone/index.html`
+- ห้องควบคุมโดรน: `http://127.0.0.1:4174/drone/index.html`
 
 ## Deploy เป็น Web Service
 
@@ -52,7 +52,7 @@ npm run pages:deploy
 The repository now builds two static websites from one codebase:
 
 - Public site: `dist/`, deployed to Cloudflare Pages project `autokgapai`.
-- Drone Ops site: `dist-drone/`, deployed to Cloudflare Pages project
+- Drone control site: `dist-drone/`, deployed to Cloudflare Pages project
   `autokgapai-drone`.
 
 Build commands:
@@ -84,11 +84,11 @@ DRONE_ACCESS_CODE=change-this-passcode
 Do not put `SUPABASE_SERVICE_ROLE_KEY` in either static site. It must stay on a
 trusted backend only.
 
-## Drone Ops access
+## Drone access
 
-The Drone Ops page has a lightweight passcode gate for the static prototype.
+The drone control page has a lightweight passcode gate for the static prototype.
 Local development uses `drone-ops` as the passcode. For Cloudflare Pages, set
-`DRONE_ACCESS_CODE` as a build environment variable on the Drone Ops project and
+`DRONE_ACCESS_CODE` as a build environment variable on the drone Pages project and
 redeploy.
 
 This client-side gate is only a convenience layer. The safer production setup is
@@ -97,7 +97,7 @@ Cloudflare Access:
 1. Open Cloudflare Zero Trust.
 2. Go to Access > Applications > Add an application > Self-hosted.
 3. Set the application domain to `autokgapai-drone.pages.dev` or the custom
-   Drone Ops domain.
+   drone control domain.
 4. Add a policy that allows only the rescue team emails or identity provider
    group.
 5. Keep the in-app passcode as a secondary, low-friction checkpoint.

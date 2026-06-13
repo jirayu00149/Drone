@@ -328,19 +328,19 @@
 
 .ai-detection-hud {
   position: absolute;
-  top: 118px;
-  right: 34px;
+  top: 96px;
+  right: 18px;
   z-index: 7;
-  width: min(360px, calc(100% - 68px));
+  width: min(236px, calc(100% - 36px));
   display: grid;
-  gap: 13px;
-  padding: 18px 20px;
+  gap: 7px;
+  padding: 10px 12px;
   border: 1px solid rgba(77, 199, 221, 0.34);
   border-radius: 4px;
-  background: linear-gradient(90deg, rgba(7, 16, 19, 0.9), rgba(7, 16, 19, 0.68));
+  background: linear-gradient(90deg, rgba(7, 16, 19, 0.86), rgba(7, 16, 19, 0.62));
   color: #ffffff;
   pointer-events: none;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(6px);
 }
 
 .ai-detection-hud[hidden] {
@@ -349,7 +349,7 @@
 
 .ai-hud-title {
   color: #54d4ec;
-  font-size: 34px;
+  font-size: 19px;
   line-height: 1;
   font-weight: 800;
   letter-spacing: 0;
@@ -358,35 +358,35 @@
 .ai-hud-status {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 7px;
   color: #6ee780;
-  font-size: 22px;
+  font-size: 14px;
   font-weight: 900;
 }
 
 .ai-hud-status span {
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: 18px;
+  height: 18px;
   color: #6ee780;
-  font-size: 26px;
+  font-size: 18px;
 }
 
 .ai-hud-row {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-columns: 20px minmax(0, 1fr);
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   color: #f4fbfb;
-  font-size: 18px;
+  font-size: 12px;
   font-weight: 800;
   line-height: 1.25;
 }
 
 .ai-hud-row svg {
-  width: 30px;
-  height: 30px;
+  width: 18px;
+  height: 18px;
   color: #ffffff;
   stroke-width: 2.4;
 }
@@ -460,17 +460,17 @@
 
   .ai-detection-hud {
     top: auto;
-    right: 14px;
-    left: 14px;
-    bottom: 14px;
-    width: auto;
+    right: 10px;
+    left: auto;
+    bottom: 10px;
+    width: min(220px, calc(100% - 20px));
   }
 
   .ai-hud-title {
-    font-size: 26px;
+    font-size: 18px;
   }
 
   .ai-hud-row {
-    font-size: 15px;
+    font-size: 12px;
   }
 }

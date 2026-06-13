@@ -2,7 +2,7 @@
   "name": "hatyai-drone-rescue-web",
   "version": "1.0.0",
   "private": true,
-  "description": "Static web server for the Hatyai Drone Rescue prototype.",
+  "description": "Static web server for the โดรนพิทักษ์น้ำท่วม prototype.",
   "scripts": {
     "build": "node scripts/build-static.js all",
     "build:public": "node scripts/build-static.js public",

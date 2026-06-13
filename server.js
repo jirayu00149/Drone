@@ -62,7 +62,7 @@ function listen(port) {
   });
   server.listen(port, host, () => {
     const displayHost = host === "0.0.0.0" ? "127.0.0.1" : host;
-    console.log(`Hatyai Drone Rescue AI running at http://${displayHost}:${port}`);
+    console.log(`โดรนพิทักษ์น้ำท่วม running at http://${displayHost}:${port}`);
   });
 }
 
