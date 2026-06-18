@@ -10,8 +10,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="manifest" href="./manifest.webmanifest" />
     <title>ห้องควบคุมโดรน | โดรนพิทักษ์น้ำท่วม</title>
-    <link rel="stylesheet" href="../styles.css" />
-    <link rel="stylesheet" href="./drone.css" />
+    <link rel="stylesheet" href="../styles.css?v=yolo-stable-20260618e" />
+    <link rel="stylesheet" href="./drone.css?v=yolo-stable-20260618e" />
   </head>
   <body data-page="drone" class="drone-site is-access-locked">
     <main class="access-gate" data-access-gate aria-labelledby="accessTitle">
@@ -72,26 +72,53 @@
                 <div class="dji-top-left">
                   <span class="dji-back" aria-hidden="true">‹</span>
                   <span class="dji-flight-mode">N Mode</span>
-                  <span class="dji-flight-state">In Flight</span>
+                  <span class="dji-flight-state" id="flightState">Aircraft Disconnected</span>
                 </div>
                 <h1 id="cameraTitle" class="dji-sr-only">Drone camera view</h1>
                 <div class="dji-top-center">
                   <span>HY-DRONE-01</span>
+                  <span class="dji-link-status" id="piLinkStatus">Waiting for Raspberry Pi</span>
                   <span class="scan-status" id="scanStatus">Ready</span>
                 </div>
                 <div class="dji-top-right">
-                  <span>GPS 18</span>
-                  <span>RC 96%</span>
-                  <span>24.1V</span>
+                  <span id="gpsStatus">GPS --</span>
+                  <span id="rcSignalStatus">RC --</span>
+                  <span class="ios-battery" id="batteryStatus" aria-label="สถานะแบตเตอรี่โดรน">
+                    <span class="battery-shell"><span class="battery-fill" id="batteryFill"></span></span>
+                    <span id="batteryPercent">--%</span>
+                  </span>
+                  <span id="voltageStatus">--.-V</span>
                 </div>
               </div>
 
               <video id="cameraVideo" playsinline muted autoplay></video>
+              <img id="droneVideoImage" class="drone-video-image" alt="" hidden />
               <canvas id="frameCanvas" width="960" height="540"></canvas>
               <div class="camera-empty" id="cameraEmpty">
                 <strong>Drone feed standby</strong>
                 <span>เปิดกล้อง อัปโหลดภาพ หรือใช้เฟรมจำลอง</span>
               </div>
+              <div class="drone-link-overlay" id="droneLinkOverlay">
+                <span class="link-pulse" aria-hidden="true"></span>
+                <strong>Waiting for drone</strong>
+                <span>รอ Raspberry Pi ส่ง telemetry / video / face tracking</span>
+                <small>ตั้งค่า DRONE_TELEMETRY_WS หรือ localStorage: hatyai-drone-telemetry-ws</small>
+              </div>
+              <div class="dji-compass" aria-label="เข็มทิศโดรน">
+                <div class="compass-ring">
+                  <span class="compass-cardinal compass-n">N</span>
+                  <span class="compass-cardinal compass-e">E</span>
+                  <span class="compass-cardinal compass-s">S</span>
+                  <span class="compass-cardinal compass-w">W</span>
+                  <span class="compass-needle" id="compassNeedle"></span>
+                  <span class="compass-aircraft" aria-hidden="true"></span>
+                </div>
+                <div class="compass-readout">
+                  <strong id="compassHeading">--°</strong>
+                  <span id="compassLabel">Heading</span>
+                </div>
+              </div>
+              <div class="object-box-layer" id="objectBoxes" aria-hidden="true"></div>
               <div class="face-box-layer" id="faceBoxes" aria-hidden="true"></div>
               <div class="ai-detection-hud" id="aiDetectionHud" hidden>
                 <div class="ai-hud-title">Face Match</div>
@@ -214,10 +241,11 @@
       </footer>
     </div>
 
-    <script src="../site-config.js"></script>
-    <script src="../shared.js"></script>
-    <script src="../tubelight-nav.js"></script>
-    <script src="../drone-access.js"></script>
-    <script src="../admin.js"></script>
+    <script src="../site-config.js?v=yolo-stable-20260618e"></script>
+    <script src="../shared.js?v=yolo-stable-20260618e"></script>
+    <script src="../tubelight-nav.js?v=yolo-stable-20260618e"></script>
+    <script src="../drone-access.js?v=yolo-stable-20260618e"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>
+    <script src="../admin.js?v=yolo-stable-20260618e"></script>
   </body>
 </html>

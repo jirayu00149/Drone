@@ -24,6 +24,7 @@
       app.hidden = false;
       app.removeAttribute("aria-hidden");
     }
+    document.dispatchEvent(new CustomEvent("drone:access-unlocked"));
   }
 
   function lock() {

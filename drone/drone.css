@@ -265,7 +265,8 @@
 }
 
 #cameraVideo,
-#frameCanvas {
+#frameCanvas,
+.drone-video-image {
   width: 100%;
   height: 100%;
   display: block;
@@ -280,6 +281,13 @@
 
 #cameraVideo.is-live {
   opacity: 1;
+}
+
+.drone-video-image {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  object-fit: cover;
 }
 
 #frameCanvas.is-hidden {
@@ -339,36 +347,72 @@
   color: #aebdc4;
 }
 
+.object-box-layer,
 .face-box-layer {
   position: absolute;
   inset: 0;
-  z-index: 6;
   pointer-events: none;
+}
+
+.object-box-layer {
+  z-index: 5;
+}
+
+.face-box-layer {
+  z-index: 6;
+}
+
+.object-box {
+  position: absolute;
+  border: 2px solid #00ff66;
+  border-radius: 0;
+  background: rgba(0, 255, 102, 0.04);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.42);
+}
+
+.object-box[data-class="1"] {
+  border-color: #ffd84a;
+  background: rgba(255, 216, 74, 0.05);
+}
+
+.object-box-label {
+  position: absolute;
+  left: -2px;
+  top: -26px;
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 7px;
+  background: #00ff66;
+  color: #061014;
+  font: 800 12px/1 "Segoe UI", sans-serif;
+  white-space: nowrap;
+}
+
+.object-box[data-class="1"] .object-box-label {
+  background: #ffd84a;
 }
 
 .face-box {
   position: absolute;
-  border: 3px solid rgba(77, 199, 221, 0.92);
+  border: 0;
   border-radius: 2px;
-  background: rgba(77, 199, 221, 0.04);
+  background:
+    linear-gradient(rgba(54, 244, 255, 0.98), rgba(54, 244, 255, 0.98)) left top / 54px 5px no-repeat,
+    linear-gradient(rgba(54, 244, 255, 0.98), rgba(54, 244, 255, 0.98)) left top / 5px 54px no-repeat,
+    linear-gradient(rgba(54, 244, 255, 0.98), rgba(54, 244, 255, 0.98)) right top / 54px 5px no-repeat,
+    linear-gradient(rgba(54, 244, 255, 0.98), rgba(54, 244, 255, 0.98)) right top / 5px 54px no-repeat,
+    linear-gradient(rgba(54, 244, 255, 0.98), rgba(54, 244, 255, 0.98)) left bottom / 54px 5px no-repeat,
+    linear-gradient(rgba(54, 244, 255, 0.98), rgba(54, 244, 255, 0.98)) left bottom / 5px 54px no-repeat,
+    linear-gradient(rgba(54, 244, 255, 0.98), rgba(54, 244, 255, 0.98)) right bottom / 54px 5px no-repeat,
+    linear-gradient(rgba(54, 244, 255, 0.98), rgba(54, 244, 255, 0.98)) right bottom / 5px 54px no-repeat;
   box-shadow:
-    0 0 0 1px rgba(8, 17, 20, 0.62),
-    0 0 28px rgba(77, 199, 221, 0.32);
+    0 0 0 1px rgba(54, 244, 255, 0.1),
+    0 0 30px rgba(54, 244, 255, 0.26);
 }
 
 .face-box::after {
-  content: "FACE";
-  position: absolute;
-  left: -3px;
-  top: calc(100% + 5px);
-  padding: 3px 7px;
-  border: 1px solid rgba(77, 199, 221, 0.7);
-  border-radius: 3px;
-  background: rgba(8, 17, 20, 0.82);
-  color: #dffcff;
-  font-size: 10px;
-  font-weight: 900;
-  white-space: nowrap;
+  display: none;
 }
 
 .ai-detection-hud {
@@ -1173,7 +1217,8 @@ body.is-fullscreen-view .screen-console .remote-screen {
 }
 
 body.is-fullscreen-view #cameraVideo,
-body.is-fullscreen-view #frameCanvas {
+body.is-fullscreen-view #frameCanvas,
+body.is-fullscreen-view .drone-video-image {
   object-fit: cover;
 }
 
@@ -1404,7 +1449,8 @@ body.drone-site .remote-screen::after {
 }
 
 body.drone-site #cameraVideo,
-body.drone-site #frameCanvas {
+body.drone-site #frameCanvas,
+body.drone-site .drone-video-image {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
@@ -1735,5 +1781,368 @@ body.drone-site .camera-empty span {
 
   body.drone-site .coord-input {
     display: none;
+  }
+}
+
+body.drone-site .drone-link-overlay {
+  position: fixed;
+  top: calc(max(12px, env(safe-area-inset-top)) + 42px);
+  left: 50%;
+  z-index: 64;
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 9px;
+  row-gap: 2px;
+  align-items: center;
+  max-width: min(420px, calc(100vw - 150px));
+  padding: 9px 13px;
+  border: 1px solid rgba(255, 188, 72, 0.28);
+  border-radius: 999px;
+  background: rgba(9, 10, 11, 0.54);
+  color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(18px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+body.drone-site .drone-link-overlay[hidden] {
+  display: none !important;
+}
+
+body.drone-site .drone-link-overlay strong {
+  font-size: 12px;
+  line-height: 1;
+}
+
+body.drone-site .drone-link-overlay span:not(.link-pulse) {
+  grid-column: 2;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.66);
+}
+
+body.drone-site .drone-link-overlay small {
+  grid-column: 2;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+body.drone-site .link-pulse {
+  grid-row: 1 / span 3;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffb83f;
+  box-shadow: 0 0 0 0 rgba(255, 184, 63, 0.56);
+  animation: djiLinkPulse 1.4s infinite;
+}
+
+@keyframes djiLinkPulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 184, 63, 0.58); }
+  100% { box-shadow: 0 0 0 12px rgba(255, 184, 63, 0); }
+}
+
+body[data-drone-connection="connected"] .dji-link-status,
+body[data-drone-connection="connected"] .dji-flight-state {
+  color: #72f7a2 !important;
+}
+
+body[data-drone-connection="connecting"] .dji-link-status,
+body[data-drone-connection="connecting"] .dji-flight-state,
+body[data-drone-connection="waiting"] .dji-link-status,
+body[data-drone-connection="waiting"] .dji-flight-state {
+  color: #ffbd4a !important;
+}
+
+body.drone-site .ai-detection-hud {
+  display: none !important;
+}
+
+body.is-fullscreen-view .ai-detection-hud:not([hidden]) {
+  display: none !important;
+}
+
+body.drone-site .ai-detection-hud[hidden] {
+  display: none !important;
+}
+
+body.drone-site .ai-detection-hud[data-tone="warning"] .ai-hud-title,
+body.drone-site .ai-detection-hud[data-tone="warning"] .ai-hud-status {
+  color: #ffbd4a;
+}
+
+body.drone-site .face-box {
+  border: 0;
+  background:
+    linear-gradient(rgba(54, 244, 255, 0.98), rgba(54, 244, 255, 0.98)) left top / 58px 5px no-repeat,
+    linear-gradient(rgba(54, 244, 255, 0.98), rgba(54, 244, 255, 0.98)) left top / 5px 58px no-repeat,
+    linear-gradient(rgba(54, 244, 255, 0.98), rgba(54, 244, 255, 0.98)) right top / 58px 5px no-repeat,
+    linear-gradient(rgba(54, 244, 255, 0.98), rgba(54, 244, 255, 0.98)) right top / 5px 58px no-repeat,
+    linear-gradient(rgba(54, 244, 255, 0.98), rgba(54, 244, 255, 0.98)) left bottom / 58px 5px no-repeat,
+    linear-gradient(rgba(54, 244, 255, 0.98), rgba(54, 244, 255, 0.98)) left bottom / 5px 58px no-repeat,
+    linear-gradient(rgba(54, 244, 255, 0.98), rgba(54, 244, 255, 0.98)) right bottom / 58px 5px no-repeat,
+    linear-gradient(rgba(54, 244, 255, 0.98), rgba(54, 244, 255, 0.98)) right bottom / 5px 58px no-repeat;
+  box-shadow:
+    0 0 0 1px rgba(54, 244, 255, 0.1),
+    0 0 28px rgba(54, 244, 255, 0.28);
+  animation: faceBracketPulse 1.8s ease-in-out infinite;
+}
+
+body.drone-site .face-box::before {
+  display: none;
+}
+
+@keyframes faceBracketPulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 2px rgba(54, 244, 255, 0.28));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(54, 244, 255, 0.5));
+  }
+}
+
+@media (max-width: 860px) {
+  body.drone-site .drone-link-overlay {
+    top: calc(max(10px, env(safe-area-inset-top)) + 39px);
+    max-width: min(360px, calc(100vw - 120px));
+  }
+
+  body.drone-site .drone-link-overlay small {
+    display: none;
+  }
+
+  body.drone-site .ai-detection-hud {
+    top: auto;
+    right: max(70px, calc(env(safe-area-inset-right) + 70px));
+    bottom: max(86px, calc(env(safe-area-inset-bottom) + 86px));
+    width: 230px;
+  }
+}
+
+body.drone-site .dji-compass {
+  position: fixed;
+  left: max(14px, env(safe-area-inset-left));
+  bottom: calc(max(12px, env(safe-area-inset-bottom)) + 64px);
+  z-index: 55;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 11px 8px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(5, 9, 11, 0.46);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(18px);
+  pointer-events: none;
+}
+
+body.drone-site .compass-ring {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.08), transparent 30%),
+    conic-gradient(from 0deg, rgba(255, 255, 255, 0.22) 0 1deg, transparent 1deg 29deg, rgba(255, 255, 255, 0.18) 29deg 31deg, transparent 31deg 59deg, rgba(255, 255, 255, 0.22) 59deg 61deg, transparent 61deg 89deg, rgba(255, 255, 255, 0.32) 89deg 91deg, transparent 91deg 119deg, rgba(255, 255, 255, 0.22) 119deg 121deg, transparent 121deg 149deg, rgba(255, 255, 255, 0.18) 149deg 151deg, transparent 151deg 179deg, rgba(255, 255, 255, 0.32) 179deg 181deg, transparent 181deg 209deg, rgba(255, 255, 255, 0.18) 209deg 211deg, transparent 211deg 239deg, rgba(255, 255, 255, 0.22) 239deg 241deg, transparent 241deg 269deg, rgba(255, 255, 255, 0.32) 269deg 271deg, transparent 271deg 299deg, rgba(255, 255, 255, 0.18) 299deg 301deg, transparent 301deg 329deg, rgba(255, 255, 255, 0.22) 329deg 331deg, transparent 331deg 360deg);
+}
+
+body.drone-site .compass-cardinal {
+  position: absolute;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+}
+
+body.drone-site .compass-n {
+  top: 10px;
+  left: 50%;
+  color: #ff6262;
+}
+
+body.drone-site .compass-e {
+  top: 50%;
+  right: 5px;
+  transform: translate(0, -50%);
+}
+
+body.drone-site .compass-s {
+  bottom: 5px;
+  left: 50%;
+  transform: translate(-50%, 0);
+}
+
+body.drone-site .compass-w {
+  top: 50%;
+  left: 8px;
+  transform: translate(0, -50%);
+}
+
+body.drone-site .compass-needle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 27px;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 27px solid #ff4b4b;
+  filter: drop-shadow(0 0 8px rgba(255, 75, 75, 0.52));
+  transform: translate(-50%, -100%) rotate(0deg);
+  transform-origin: 50% 100%;
+  transition: transform 220ms ease;
+}
+
+body.drone-site .compass-aircraft {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.82);
+  border-radius: 50%;
+  background: rgba(5, 9, 11, 0.88);
+  transform: translate(-50%, -50%);
+}
+
+body.drone-site .compass-readout {
+  display: grid;
+  gap: 2px;
+  min-width: 54px;
+}
+
+body.drone-site .compass-readout strong {
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 1;
+}
+
+body.drone-site .compass-readout span {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+@media (max-width: 860px) {
+  body.drone-site .dji-compass {
+    bottom: calc(max(10px, env(safe-area-inset-bottom)) + 56px);
+    padding: 7px 9px 7px 7px;
+  }
+
+  body.drone-site .compass-ring {
+    width: 58px;
+    height: 58px;
+  }
+
+  body.drone-site .compass-needle {
+    height: 22px;
+    border-left-width: 4px;
+    border-right-width: 4px;
+    border-bottom-width: 22px;
+  }
+}
+
+@media (max-width: 640px) {
+  body.drone-site .dji-compass {
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+
+  body.drone-site .compass-readout {
+    display: none;
+  }
+}
+
+/* Auto-flight cleanup requested for Raspberry Pi mode. */
+body.drone-site .screen-left-controls,
+body.is-fullscreen-view .screen-left-controls {
+  display: none !important;
+}
+
+body.drone-site .dji-compass {
+  left: max(14px, env(safe-area-inset-left));
+  top: calc(max(10px, env(safe-area-inset-top)) + 44px);
+  bottom: auto;
+  padding: 7px 10px 7px 7px;
+}
+
+body.drone-site .compass-ring {
+  width: 60px;
+  height: 60px;
+}
+
+body.drone-site .compass-needle {
+  height: 23px;
+  border-left-width: 4px;
+  border-right-width: 4px;
+  border-bottom-width: 23px;
+}
+
+body.drone-site .ios-battery {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: rgba(5, 9, 11, 0.34);
+  color: rgba(255, 255, 255, 0.94);
+  font-variant-numeric: tabular-nums;
+}
+
+body.drone-site .battery-shell {
+  position: relative;
+  width: 31px;
+  height: 15px;
+  padding: 2px;
+  border: 1.4px solid rgba(255, 255, 255, 0.78);
+  border-radius: 5px;
+}
+
+body.drone-site .battery-shell::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  right: -4px;
+  width: 2px;
+  height: 6px;
+  border-radius: 0 2px 2px 0;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+body.drone-site .battery-fill {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: 3px;
+  background: #72f7a2;
+  transition: width 180ms ease, background 180ms ease;
+}
+
+body.drone-site .ios-battery[data-level="mid"] .battery-fill {
+  background: #ffd166;
+}
+
+body.drone-site .ios-battery[data-level="low"] .battery-fill {
+  background: #ff4d4d;
+}
+
+body.drone-site .ios-battery[data-level="unknown"] {
+  opacity: 0.62;
+}
+
+@media (max-width: 860px) {
+  body.drone-site .dji-compass {
+    top: calc(max(8px, env(safe-area-inset-top)) + 40px);
+  }
+
+  body.drone-site .compass-ring {
+    width: 52px;
+    height: 52px;
+  }
+
+  body.drone-site .compass-readout strong {
+    font-size: 14px;
   }
 }

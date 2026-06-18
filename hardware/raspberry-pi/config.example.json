@@ -1,0 +1,23 @@
+{
+  "camera_index": 0,
+  "frame_width": 640,
+  "frame_height": 480,
+  "scan_interval_seconds": 1.0,
+  "match_threshold_percent": 60,
+  "detection_threshold": 0.18,
+  "yolo_model_path": "C:\\Users\\Administrator\\Documents\\Codex\\2026-06-18\\ai\\outputs\\face_scan_ai\\models\\drone_person_detector.pt",
+  "yolo_conf": 0.25,
+  "yolo_imgsz": 640,
+  "yolo_classes": [0, 1],
+  "yolo_scan_interval_seconds": 0.12,
+  "yolo_server_url": "http://127.0.0.1:4173/api/yolo/detections",
+  "lbph_max_distance": 90,
+  "server_url": "http://127.0.0.1:4173/api/pi/matches",
+  "gps": {
+    "mode": "fixed",
+    "fixed_lat": 7.0086,
+    "fixed_lng": 100.4747,
+    "serial_port": "/dev/ttyUSB0",
+    "baudrate": 9600
+  }
+}

@@ -78,6 +78,9 @@ function configJs() {
     droneBaseUrl: droneSiteUrl,
     supabaseUrl: process.env.SUPABASE_URL || "",
     supabasePublishableKey: process.env.SUPABASE_PUBLISHABLE_KEY || "",
+    droneTelemetryWs: process.env.DRONE_TELEMETRY_WS || "",
+    droneVideoUrl: process.env.DRONE_VIDEO_URL || "",
+    autoStartCamera: process.env.DRONE_AUTO_START_CAMERA !== "false",
     droneAccessHash: process.env.DRONE_ACCESS_HASH || sha256(droneAccessCode)
   };
 
