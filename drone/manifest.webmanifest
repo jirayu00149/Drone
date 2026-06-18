@@ -1,8 +1,9 @@
 {
   "name": "Hatyai Drone Rescue Control",
   "short_name": "Drone Control",
-  "start_url": ".",
+  "start_url": "./index.html",
   "scope": ".",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
   "display": "fullscreen",
   "orientation": "landscape",
   "background_color": "#02080a",

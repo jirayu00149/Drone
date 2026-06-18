@@ -1,4 +1,9 @@
 .drone-site {
+  --drone-viewport-width: 100vw;
+  --drone-viewport-height: 100vh;
+  --drone-viewport-half-height: 50vh;
+  --drone-viewport-left: 0px;
+  --drone-viewport-top: 0px;
   background:
     radial-gradient(circle at 50% -10%, rgba(36, 95, 147, 0.16), transparent 34%),
     #0b1215;
@@ -1058,9 +1063,9 @@ body.drone-site {
   --drone-status-height: 0px;
   position: fixed;
   inset: 0;
-  width: 100vw;
-  height: 100vh;
-  min-height: 100vh;
+  width: var(--drone-viewport-width, 100vw);
+  height: var(--drone-viewport-height, 100vh);
+  min-height: var(--drone-viewport-height, 100vh);
   overflow: hidden;
 }
 
@@ -1080,9 +1085,9 @@ body.drone-site {
   position: fixed;
   inset: 0;
   display: block;
-  width: 100vw;
-  min-height: 100vh;
-  height: 100vh;
+  width: var(--drone-viewport-width, 100vw);
+  min-height: var(--drone-viewport-height, 100vh);
+  height: var(--drone-viewport-height, 100vh);
   padding: 0;
   overflow: hidden;
 }
@@ -1091,10 +1096,10 @@ body.drone-site {
   position: fixed;
   inset: 0;
   display: block;
-  width: 100vw;
+  width: var(--drone-viewport-width, 100vw);
   max-width: none;
-  height: 100vh;
-  min-height: 100vh;
+  height: var(--drone-viewport-height, 100vh);
+  min-height: var(--drone-viewport-height, 100vh);
   margin: 0;
 }
 
@@ -1171,9 +1176,10 @@ body.is-fullscreen-view {
 
 body.is-fullscreen-view .drone-app-shell {
   position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
+  left: var(--drone-viewport-left, 0);
+  top: var(--drone-viewport-top, 0);
+  width: var(--drone-viewport-width, 100vw);
+  height: var(--drone-viewport-height, 100vh);
   background: #02080a;
 }
 
@@ -1190,10 +1196,13 @@ body.is-fullscreen-view .drone-footer {
 body.is-fullscreen-view .screen-only-shell,
 body.is-fullscreen-view .screen-console {
   position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  min-height: 100vh;
+  left: var(--drone-viewport-left, 0);
+  top: var(--drone-viewport-top, 0);
+  right: auto;
+  bottom: auto;
+  width: var(--drone-viewport-width, 100vw);
+  height: var(--drone-viewport-height, 100vh);
+  min-height: var(--drone-viewport-height, 100vh);
   padding: 0;
 }
 
@@ -1296,10 +1305,10 @@ body.drone-site,
 body.drone-site .drone-app-shell,
 body.drone-site .screen-only-shell,
 body.drone-site .screen-console {
-  width: 100vw !important;
+  width: var(--drone-viewport-width, 100vw) !important;
   max-width: none !important;
-  height: 100vh !important;
-  min-height: 100vh !important;
+  height: var(--drone-viewport-height, 100vh) !important;
+  min-height: var(--drone-viewport-height, 100vh) !important;
   margin: 0 !important;
   padding: 0 !important;
   overflow: hidden !important;
@@ -1309,17 +1318,23 @@ body.drone-site .drone-app-shell,
 body.drone-site .screen-only-shell,
 body.drone-site .screen-console {
   position: fixed !important;
-  inset: 0 !important;
+  left: var(--drone-viewport-left, 0) !important;
+  top: var(--drone-viewport-top, 0) !important;
+  right: auto !important;
+  bottom: auto !important;
 }
 
 body.drone-site .remote-screen,
 body.is-fullscreen-view .screen-console .remote-screen {
   position: fixed !important;
-  inset: 0 !important;
-  width: 100vw !important;
+  left: var(--drone-viewport-left, 0) !important;
+  top: var(--drone-viewport-top, 0) !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: var(--drone-viewport-width, 100vw) !important;
   max-width: none !important;
-  height: 100vh !important;
-  min-height: 100vh !important;
+  height: var(--drone-viewport-height, 100vh) !important;
+  min-height: var(--drone-viewport-height, 100vh) !important;
   max-height: none !important;
   margin: 0 !important;
   border: 0 !important;
@@ -1335,9 +1350,33 @@ body.is-fullscreen-view .screen-console .remote-screen {
   body.drone-site .screen-console,
   body.drone-site .remote-screen,
   body.is-fullscreen-view .screen-console .remote-screen {
-    height: 100dvh !important;
-    min-height: 100dvh !important;
+    height: var(--drone-viewport-height, 100dvh) !important;
+    min-height: var(--drone-viewport-height, 100dvh) !important;
   }
+}
+
+html.is-fullscreen-view,
+body.is-mobile-fullscreen-fallback {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+body.is-mobile-fullscreen-fallback {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: var(--drone-viewport-width, 100vw) !important;
+  height: var(--drone-viewport-height, 100vh) !important;
+}
+
+body.is-mobile-fullscreen-fallback .remote-screen {
+  touch-action: none;
+}
+
+body.is-mobile-fullscreen-fallback button,
+body.is-mobile-fullscreen-fallback input,
+body.is-mobile-fullscreen-fallback label {
+  touch-action: manipulation;
 }
 
 body.drone-site .screen-left-controls,
@@ -1545,7 +1584,7 @@ body.is-fullscreen-view .screen-left-controls {
 
 body.drone-site .screen-right-controls,
 body.is-fullscreen-view .screen-right-controls {
-  top: calc(50vh - 112px) !important;
+  top: calc(var(--drone-viewport-half-height, 50vh) - 112px) !important;
   right: max(16px, env(safe-area-inset-right)) !important;
   left: auto !important;
   display: flex !important;
@@ -1558,7 +1597,7 @@ body.is-fullscreen-view .screen-right-controls {
 @supports (height: 100dvh) {
   body.drone-site .screen-right-controls,
   body.is-fullscreen-view .screen-right-controls {
-    top: calc(50dvh - 112px) !important;
+    top: calc(var(--drone-viewport-half-height, 50dvh) - 112px) !important;
   }
 }
 

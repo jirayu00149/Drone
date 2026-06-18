@@ -130,6 +130,38 @@
   };
   let pageFullscreenActive = false;
   let nativeFullscreenActive = false;
+  const isIOSLike =
+    /iP(ad|hone|od)/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  function appViewport() {
+    const visualViewport = window.visualViewport;
+    return {
+      width: Math.round(visualViewport?.width || window.innerWidth || document.documentElement.clientWidth),
+      height: Math.round(visualViewport?.height || window.innerHeight || document.documentElement.clientHeight),
+      offsetLeft: Math.round(visualViewport?.offsetLeft || 0),
+      offsetTop: Math.round(visualViewport?.offsetTop || 0)
+    };
+  }
+
+  function syncViewportVars() {
+    const viewport = appViewport();
+    const root = document.documentElement;
+    root.style.setProperty("--drone-viewport-width", `${viewport.width}px`);
+    root.style.setProperty("--drone-viewport-height", `${viewport.height}px`);
+    root.style.setProperty("--drone-viewport-half-height", `${Math.round(viewport.height / 2)}px`);
+    root.style.setProperty("--drone-viewport-left", `${viewport.offsetLeft}px`);
+    root.style.setProperty("--drone-viewport-top", `${viewport.offsetTop}px`);
+  }
+
+  function nudgeMobileBrowserChrome() {
+    if (!pageFullscreenActive) return;
+    requestAnimationFrame(() => {
+      syncViewportVars();
+      window.scrollTo(0, 1);
+      requestAnimationFrame(syncViewportVars);
+    });
+  }
 
   function updateScanStatus(text, tone = "") {
     if (els.scanStatus.textContent === text && els.scanStatus.className === `scan-status ${tone}`) return;
@@ -1696,7 +1728,15 @@
 
   function setFullscreenState(active) {
     pageFullscreenActive = active;
+    syncViewportVars();
+    document.documentElement.classList.toggle("is-fullscreen-view", active);
     document.body.classList.toggle("is-fullscreen-view", active);
+    document.body.classList.toggle("is-mobile-fullscreen-fallback", active && !getFullscreenElement());
+    if (active) {
+      nudgeMobileBrowserChrome();
+    } else {
+      window.scrollTo(0, 0);
+    }
     if (!els.fullscreenBtn) return;
     els.fullscreenBtn.classList.toggle("is-active", active);
     els.fullscreenBtn.setAttribute("aria-pressed", active ? "true" : "false");
@@ -1711,6 +1751,7 @@
   }
 
   async function requestNativeFullscreen(target) {
+    if (isIOSLike) return;
     if (target.requestFullscreen) {
       try {
         await target.requestFullscreen({ navigationUI: "hide" });
@@ -1774,6 +1815,13 @@
         await requestNativeFullscreen(target);
         nativeFullscreenActive = Boolean(getFullscreenElement());
       }
+      if (nativeFullscreenActive && screen.orientation?.lock) {
+        try {
+          await screen.orientation.lock("landscape");
+        } catch {
+          // Browser may reject orientation lock unless installed as an app.
+        }
+      }
     } catch (error) {
       console.warn(error);
     }
@@ -1789,6 +1837,13 @@
     els.gpsBtn.addEventListener("click", useDeviceLocation);
     els.exportBtn.addEventListener("click", exportLogs);
     els.fullscreenBtn?.addEventListener("click", toggleFullscreen);
+    window.addEventListener("resize", syncViewportVars);
+    window.addEventListener("orientationchange", () => {
+      setTimeout(nudgeMobileBrowserChrome, 250);
+      setTimeout(nudgeMobileBrowserChrome, 700);
+    });
+    window.visualViewport?.addEventListener("resize", syncViewportVars);
+    window.visualViewport?.addEventListener("scroll", syncViewportVars);
     document.addEventListener("fullscreenchange", syncFullscreenState);
     document.addEventListener("webkitfullscreenchange", syncFullscreenState);
     document.addEventListener("MSFullscreenChange", syncFullscreenState);
@@ -1822,6 +1877,7 @@
     document.addEventListener("drone:access-unlocked", autoConnectFlightSession);
   }
 
+  syncViewportVars();
   bindEvents();
   renderMissionMeta();
   renderTelemetry();
