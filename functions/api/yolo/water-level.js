@@ -177,11 +177,13 @@ export async function onRequest(context) {
     memoryEvents.push(event);
     if (memoryEvents.length > 240) memoryEvents.splice(0, memoryEvents.length - 240);
     let persisted = false;
-    try {
-      await insertSupabase(event, env);
-      persisted = true;
-    } catch (error) {
-      event.persist_error = String(error.message || error);
+    if (event.source_type !== "demo") {
+      try {
+        await insertSupabase(event, env);
+        persisted = true;
+      } catch (error) {
+        event.persist_error = String(error.message || error);
+      }
     }
     return json({ ok: true, persisted, event: publicEvent(event) });
   } catch (error) {
