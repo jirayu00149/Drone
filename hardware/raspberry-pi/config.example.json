@@ -20,6 +20,7 @@
   "water_yolo_labels": ["water", "flood", "flood-water"],
   "water_scan_interval_seconds": 0.5,
   "water_level_server_url": "http://127.0.0.1:4173/api/yolo/water-level",
+  "water_ingest_token": "",
   "water_reference_height_cm": 200,
   "water_reference_top_y": 80,
   "water_reference_bottom_y": 460,

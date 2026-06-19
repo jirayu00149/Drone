@@ -451,6 +451,172 @@ to authenticated
 using ((select public.can_manage_rescue_data()))
 with check ((select public.can_manage_rescue_data()));
 
+
+create table if not exists public.water_level_events (
+  id bigint generated always as identity primary key,
+  event_id text not null unique,
+  device_id text not null default 'HY-WATER-01',
+  source_type text not null default 'yolo',
+  method text not null default 'ultralytics-yolo-water-level',
+  model_path text,
+  conf numeric(5,4),
+  imgsz integer,
+  frame_width integer,
+  frame_height integer,
+  waterline_y numeric(9,2),
+  level_cm numeric(8,2),
+  level_percent numeric(5,2),
+  reference_height_cm numeric(8,2) not null default 200,
+  alert_cm numeric(8,2) not null default 80,
+  critical_cm numeric(8,2) not null default 120,
+  severity text not null default 'unknown',
+  confidence numeric(5,4),
+  latitude numeric(9,6),
+  longitude numeric(9,6),
+  location_accuracy_m numeric(8,2),
+  geofence_name text,
+  geofence_center_lat numeric(9,6),
+  geofence_center_lng numeric(9,6),
+  geofence_radius_m integer,
+  geofence_distance_m integer,
+  geofence_valid boolean,
+  location_label text,
+  reporter_contact text,
+  note text,
+  photo_data_url text,
+  photo_mime text,
+  photo_size_bytes integer,
+  detections jsonb not null default '[]'::jsonb,
+  payload jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  constraint water_level_events_event_id_not_blank check (length(trim(event_id)) > 0),
+  constraint water_level_events_source_type_check check (source_type in ('yolo', 'mobile_photo', 'manual', 'demo')),
+  constraint water_level_events_severity_check check (severity in ('normal', 'watch', 'warning', 'critical', 'unknown')),
+  constraint water_level_events_level_cm_check check (level_cm is null or level_cm >= 0),
+  constraint water_level_events_level_percent_check check (level_percent is null or level_percent between 0 and 100),
+  constraint water_level_events_confidence_check check (confidence is null or confidence between 0 and 1),
+  constraint water_level_events_latitude_check check (latitude is null or latitude between -90 and 90),
+  constraint water_level_events_longitude_check check (longitude is null or longitude between -180 and 180),
+  constraint water_level_events_photo_size_check check (photo_size_bytes is null or photo_size_bytes between 0 and 950000),
+  constraint water_level_events_detections_array_check check (jsonb_typeof(detections) = 'array'),
+  constraint water_level_events_payload_object_check check (jsonb_typeof(payload) = 'object')
+);
+
+create index if not exists water_level_events_created_at_idx
+on public.water_level_events (created_at desc);
+
+create index if not exists water_level_events_severity_created_at_idx
+on public.water_level_events (severity, created_at desc);
+
+create index if not exists water_level_events_geofence_idx
+on public.water_level_events (geofence_valid, created_at desc);
+
+alter table public.water_level_events enable row level security;
+
+grant select (
+  event_id,
+  device_id,
+  source_type,
+  method,
+  level_cm,
+  level_percent,
+  reference_height_cm,
+  alert_cm,
+  critical_cm,
+  severity,
+  confidence,
+  latitude,
+  longitude,
+  location_accuracy_m,
+  geofence_name,
+  geofence_distance_m,
+  geofence_valid,
+  location_label,
+  note,
+  created_at
+) on public.water_level_events to anon;
+
+grant insert (
+  event_id,
+  device_id,
+  source_type,
+  method,
+  level_cm,
+  level_percent,
+  reference_height_cm,
+  alert_cm,
+  critical_cm,
+  severity,
+  confidence,
+  latitude,
+  longitude,
+  location_accuracy_m,
+  geofence_name,
+  geofence_center_lat,
+  geofence_center_lng,
+  geofence_radius_m,
+  geofence_distance_m,
+  geofence_valid,
+  location_label,
+  reporter_contact,
+  note,
+  photo_data_url,
+  photo_mime,
+  photo_size_bytes,
+  detections,
+  payload,
+  created_at
+) on public.water_level_events to anon;
+
+grant select, insert, update, delete on public.water_level_events to authenticated;
+grant usage, select on sequence public.water_level_events_id_seq to anon, authenticated;
+
+drop policy if exists water_level_events_public_select on public.water_level_events;
+create policy water_level_events_public_select
+on public.water_level_events
+for select
+to anon
+using (true);
+
+drop policy if exists water_level_events_public_insert_mobile on public.water_level_events;
+create policy water_level_events_public_insert_mobile
+on public.water_level_events
+for insert
+to anon
+with check (
+  source_type in ('mobile_photo', 'demo')
+  and coalesce(photo_size_bytes, 0) <= 950000
+);
+
+drop policy if exists water_level_events_staff_select on public.water_level_events;
+create policy water_level_events_staff_select
+on public.water_level_events
+for select
+to authenticated
+using ((select public.is_rescue_staff()));
+
+drop policy if exists water_level_events_staff_insert on public.water_level_events;
+create policy water_level_events_staff_insert
+on public.water_level_events
+for insert
+to authenticated
+with check ((select public.can_manage_rescue_data()));
+
+drop policy if exists water_level_events_staff_update on public.water_level_events;
+create policy water_level_events_staff_update
+on public.water_level_events
+for update
+to authenticated
+using ((select public.can_manage_rescue_data()))
+with check ((select public.can_manage_rescue_data()));
+
+drop policy if exists water_level_events_staff_delete on public.water_level_events;
+create policy water_level_events_staff_delete
+on public.water_level_events
+for delete
+to authenticated
+using ((select public.can_manage_rescue_data()));
+
 insert into storage.buckets (id, name, public)
 values
   ('missing-person-references', 'missing-person-references', false),

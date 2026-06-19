@@ -29,7 +29,7 @@
         <div>
           <span class="eyebrow red">YOLO flood-level AI</span>
           <h1 id="waterLevelTitle">วัดระดับน้ำท่วม</h1>
-          <p>หน้าแยกสำหรับรับผลจากโมเดล YOLO ตรวจจับแนวน้ำ แล้วแปลงเป็นเซนติเมตรตามค่าคาลิเบรตของจุดวัด เช่น เสา กำแพง หรือสเกลระดับน้ำในภาพ</p>
+          <p>หน้าแยกสำหรับรับผลจากโมเดล YOLO เก็บประวัติระดับน้ำ และให้เจ้าหน้าที่/ประชาชนถ่ายรูปจากมือถือพร้อม GPS เพื่อเช็กว่าอยู่ในพื้นที่ภารกิจจริงหรือไม่</p>
         </div>
         <span class="status-chip" id="waterConnectionStatus">รอข้อมูล YOLO</span>
       </section>
@@ -43,13 +43,11 @@
             </div>
             <span class="status-chip" id="waterSeverity">UNKNOWN</span>
           </div>
-
           <div class="water-metric-grid" aria-live="polite">
             <div class="water-metric"><span>ระดับน้ำ</span><strong id="waterLevelCm">-- cm</strong></div>
             <div class="water-metric"><span>สัดส่วนสเกล</span><strong id="waterLevelPercent">--%</strong></div>
             <div class="water-metric"><span>ความมั่นใจ</span><strong id="waterConfidence">--%</strong></div>
           </div>
-
           <div class="water-gauge" aria-hidden="true">
             <div class="water-gauge-fill" id="waterGaugeFill"></div>
             <div class="water-gauge-line" id="waterGaugeLine"></div>
@@ -61,31 +59,84 @@
         <article class="panel water-control-panel">
           <div class="panel-header compact-header">
             <div>
-              <h2>แหล่งข้อมูล YOLO</h2>
-              <p>ตั้ง endpoint จากเครื่องที่รัน server หรือ Raspberry Pi แล้วหน้านี้จะ poll ค่าล่าสุดให้อัตโนมัติ</p>
+              <h2>แหล่งข้อมูลและประวัติ</h2>
+              <p>ใช้ Cloudflare Pages Function หรือ server local ที่รัน /api/yolo/water-level</p>
             </div>
           </div>
           <div class="water-control-body">
             <label class="search-box water-endpoint-box">
               <span>Water-level API endpoint</span>
-              <input id="waterEndpointInput" autocomplete="off" placeholder="http://127.0.0.1:4173/api/yolo/water-level" />
+              <input id="waterEndpointInput" autocomplete="off" placeholder="https://.../api/yolo/water-level" />
             </label>
             <div class="water-endpoint-actions">
               <button class="primary-button" id="saveWaterEndpointBtn" type="button">บันทึก endpoint</button>
               <button class="secondary-button" id="demoWaterEventBtn" type="button">ทดสอบตัวอย่าง</button>
             </div>
             <div class="water-help-card">
-              <strong>วิธีใช้กับ YOLO</strong>
-              <span>รันสคริปต์บน Pi/เครื่องกล้องให้ส่งผลไปที่ <code>/api/yolo/water-level</code> แล้วเปิดหน้านี้เพื่อดูค่าระดับน้ำแบบเรียลไทม์</span>
+              <strong>Cloud + Database</strong>
+              <span>Cloud endpoint จะรับผล YOLO/รูปมือถือ และบันทึกลง Supabase เมื่อมี SUPABASE_URL + key ตั้งใน Cloudflare Pages Functions หรือในหน้าเว็บ</span>
             </div>
-            <div class="water-detection-list" id="waterDetectionList" aria-live="polite"></div>
+            <div class="water-history-chart" id="waterHistoryChart" aria-label="กราฟประวัติระดับน้ำ"></div>
+            <div class="water-history-list" id="waterHistoryList" aria-live="polite"></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="water-tools-grid" aria-label="เครื่องมือวัดระดับน้ำ">
+        <article class="panel water-calibration-panel">
+          <div class="panel-header compact-header">
+            <div>
+              <h2>คาลิเบรตจุดวัด</h2>
+              <p>ตั้งค่าระยะจริงและตำแหน่งพิกเซลของสเกล เพื่อให้ YOLO แปลงแนวน้ำเป็นเซนติเมตร</p>
+            </div>
+          </div>
+          <div class="water-form-grid">
+            <label><span>ความสูงสเกลจริง (cm)</span><input id="calibrationHeightCm" type="number" min="1" step="1" /></label>
+            <label><span>พิกเซลบนสุดของสเกล</span><input id="calibrationTopY" type="number" min="0" step="1" /></label>
+            <label><span>พิกเซลฐาน/ศูนย์น้ำ</span><input id="calibrationBottomY" type="number" min="1" step="1" /></label>
+            <label><span>ระดับเตือนภัย (cm)</span><input id="calibrationAlertCm" type="number" min="1" step="1" /></label>
+            <label><span>ระดับวิกฤต (cm)</span><input id="calibrationCriticalCm" type="number" min="1" step="1" /></label>
+            <button class="primary-button" id="saveCalibrationBtn" type="button">บันทึกคาลิเบรต</button>
+          </div>
+          <pre class="water-raw-event compact" id="waterCalibrationJson"></pre>
+        </article>
+
+        <article class="panel water-mobile-panel">
+          <div class="panel-header compact-header">
+            <div>
+              <h2>ถ่ายรูปจากมือถือ + ตรวจพื้นที่จริง</h2>
+              <p>ใช้กล้องมือถือหรืออัปโหลดรูป พร้อม GPS เพื่อเช็กระยะจากศูนย์พื้นที่ภารกิจ</p>
+            </div>
+            <span class="status-chip" id="mobileGeofenceStatus">ยังไม่เช็กพิกัด</span>
+          </div>
+          <div class="water-mobile-body">
+            <div class="mobile-camera-box">
+              <video id="mobileCameraVideo" playsinline muted hidden></video>
+              <img id="mobilePhotoPreview" alt="ตัวอย่างรูปจุดวัดน้ำ" hidden />
+              <div class="camera-empty" id="mobilePhotoEmpty"><strong>รูปจุดวัดน้ำ</strong><span>เปิดกล้องมือถือ หรือเลือกรูปจากเครื่อง</span></div>
+            </div>
+            <canvas id="mobilePhotoCanvas" hidden></canvas>
+            <div class="water-endpoint-actions">
+              <button class="secondary-button" id="startMobileCameraBtn" type="button">เปิดกล้อง</button>
+              <button class="secondary-button" id="captureMobilePhotoBtn" type="button">ถ่ายรูป</button>
+              <label class="secondary-button file-button">เลือกรูป<input id="mobilePhotoInput" type="file" accept="image/*" capture="environment" /></label>
+              <button class="primary-button" id="captureMobileLocationBtn" type="button">จับ GPS</button>
+            </div>
+            <div class="water-location-box" id="mobileLocationStatus">ยังไม่ได้รับพิกัด</div>
+            <div class="water-form-grid mobile-report-fields">
+              <label><span>ชื่อจุด/บริเวณ</span><input id="mobileLocationLabel" autocomplete="off" placeholder="เช่น คลองอู่ตะเภา หน้าตลาด" /></label>
+              <label><span>ระดับน้ำโดยประมาณ (cm)</span><input id="mobileManualLevelCm" type="number" min="0" step="0.1" placeholder="ถ้ามองเห็นสเกล" /></label>
+              <label><span>ผู้แจ้ง/ติดต่อกลับ</span><input id="mobileReporterContact" autocomplete="off" placeholder="ไม่บังคับ" /></label>
+              <label class="wide"><span>หมายเหตุ</span><textarea id="mobileNote" rows="3" placeholder="สภาพพื้นที่ จุดสังเกต หรือรายละเอียดเพิ่มเติม"></textarea></label>
+            </div>
+            <button class="primary-button" id="submitMobileReportBtn" type="button">ส่งรูปและพิกัดเข้าระบบ</button>
           </div>
         </article>
       </section>
 
       <section class="panel water-event-panel" aria-labelledby="waterRawTitle">
         <div class="panel-header compact-header">
-          <div><h2 id="waterRawTitle">ข้อมูลล่าสุดจาก AI</h2><p>ใช้สำหรับตรวจสอบ payload ที่ YOLO ส่งเข้ามา</p></div>
+          <div><h2 id="waterRawTitle">ข้อมูลล่าสุดจาก AI/API</h2><p>ใช้สำหรับตรวจสอบ payload ที่ YOLO หรือมือถือส่งเข้ามา</p></div>
         </div>
         <pre id="waterRawEvent" class="water-raw-event">ยังไม่มีข้อมูล</pre>
       </section>
@@ -93,7 +144,7 @@
 
     <footer class="footer-note">
       <span>ควรคาลิเบรตหน้างาน</span>
-      <span>ค่าระดับน้ำจาก AI เป็นตัวช่วยเฝ้าระวัง และควรเทียบกับจุดวัดจริงก่อนใช้ตัดสินใจภาคสนาม</span>
+      <span>ค่าระดับน้ำและพิกัดจาก AI/GPS เป็นตัวช่วยเฝ้าระวัง ควรเทียบกับจุดวัดจริงก่อนใช้ตัดสินใจภาคสนาม</span>
     </footer>
 
     <script src="./site-config.js"></script>

@@ -26,6 +26,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "water_yolo_labels": ["water", "flood", "flood-water"],
     "water_scan_interval_seconds": 0.5,
     "water_level_server_url": "http://127.0.0.1:4173/api/yolo/water-level",
+    "water_ingest_token": "",
     "water_reference_height_cm": 200,
     "water_reference_top_y": 80,
     "water_reference_bottom_y": 640,
@@ -51,11 +52,14 @@ def parse_classes(value: Any) -> Optional[List[int]]:
     return classes or None
 
 
-def post_json(url: str, payload: Dict[str, Any]) -> None:
+def post_json(url: str, payload: Dict[str, Any], ingest_token: str = "") -> None:
     if not url:
         return
     data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-    request = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"}, method="POST")
+    headers = {"Content-Type": "application/json"}
+    if ingest_token:
+        headers["X-Water-Ingest-Token"] = ingest_token
+    request = urllib.request.Request(url, data=data, headers=headers, method="POST")
     try:
         with urllib.request.urlopen(request, timeout=2.0) as response:
             response.read()
@@ -168,6 +172,7 @@ def run(args: argparse.Namespace) -> None:
     classes = parse_classes(args.classes if args.classes is not None else config.get("water_yolo_classes"))
     labels = [str(item) for item in config.get("water_yolo_labels", [])]
     server_url = args.server_url or config.get("water_level_server_url") or "http://127.0.0.1:4173/api/yolo/water-level"
+    ingest_token = args.ingest_token or config.get("water_ingest_token", "")
     interval = float(args.interval if args.interval is not None else config.get("water_scan_interval_seconds", 0.5))
     height_cm = float(args.reference_height_cm if args.reference_height_cm is not None else config.get("water_reference_height_cm", 200))
     top_y = float(args.reference_top_y if args.reference_top_y is not None else config.get("water_reference_top_y", 80))
@@ -217,7 +222,7 @@ def run(args: argparse.Namespace) -> None:
                 "confidence": round(confidence, 4),
                 "detections": detections,
             }
-            post_json(server_url, payload)
+            post_json(server_url, payload, ingest_token)
             print(f"water detections={len(detections)} level_cm={payload['level_cm']} severity={state}")
 
             if args.preview:
@@ -240,6 +245,7 @@ def main() -> None:
     parser.add_argument("--imgsz", type=int, default=None)
     parser.add_argument("--classes", default=None, help="Comma-separated water class ids, optional")
     parser.add_argument("--server-url", default="")
+    parser.add_argument("--ingest-token", default="")
     parser.add_argument("--interval", type=float, default=None)
     parser.add_argument("--device-id", default="HY-WATER-01")
     parser.add_argument("--reference-height-cm", type=float, default=None)

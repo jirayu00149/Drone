@@ -30,7 +30,7 @@ function sendJson(response, status, payload) {
     "Cache-Control": "no-store",
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type"
+    "Access-Control-Allow-Headers": "Content-Type, X-Water-Ingest-Token"
   });
   response.end(data);
 }
@@ -41,7 +41,7 @@ function readRequestBody(request) {
     request.setEncoding("utf8");
     request.on("data", (chunk) => {
       body += chunk;
-      if (body.length > 1_000_000) {
+      if (body.length > 5_000_000) {
         request.destroy();
         reject(new Error("request_body_too_large"));
       }
@@ -63,6 +63,32 @@ function waterSeverity(levelCm, alertCm = 80, criticalCm = 120) {
   if (levelCm > 0) return "watch";
   return "normal";
 }
+
+function distanceMeters(aLat, aLng, bLat, bLng) {
+  const radius = 6371000;
+  const toRad = (value) => (value * Math.PI) / 180;
+  const dLat = toRad(bLat - aLat);
+  const dLng = toRad(bLng - aLng);
+  const lat1 = toRad(aLat);
+  const lat2 = toRad(bLat);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * radius * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+function waterGeofence() {
+  return {
+    name: process.env.WATER_GEOFENCE_NAME || "พื้นที่ภารกิจหาดใหญ่",
+    centerLat: numberOrNull(process.env.WATER_GEOFENCE_CENTER_LAT, 7.0086),
+    centerLng: numberOrNull(process.env.WATER_GEOFENCE_CENTER_LNG, 100.4747),
+    radiusM: numberOrNull(process.env.WATER_GEOFENCE_RADIUS_M, 30000)
+  };
+}
+
+function safeWaterEvent(event) {
+  const { photo_data_url, reporter_contact, payload, ...safe } = event;
+  return safe;
+}
+
 
 function readPiMatches() {
   if (!fs.existsSync(piMatchesPath)) return [];
@@ -176,7 +202,7 @@ async function handleYoloWaterLevel(request, response) {
   }
 
   if (request.method === "GET") {
-    const events = waterLevelEvents.slice(-120);
+    const events = waterLevelEvents.slice(-120).map(safeWaterEvent);
     sendJson(response, 200, { events, latest: events.at(-1) || null });
     return;
   }
@@ -188,14 +214,28 @@ async function handleYoloWaterLevel(request, response) {
 
   try {
     const payload = JSON.parse((await readRequestBody(request)) || "{}");
+    const sourceType = String(payload.source_type || (payload.photo_data_url ? "mobile_photo" : "yolo"));
+    if (process.env.WATER_INGEST_TOKEN && sourceType === "yolo" && request.headers["x-water-ingest-token"] !== process.env.WATER_INGEST_TOKEN) {
+      sendJson(response, 401, { error: "invalid_ingest_token" });
+      return;
+    }
+
     const levelCm = numberOrNull(payload.level_cm ?? payload.water_level_cm ?? payload.levelCm);
-    const levelPercent = numberOrNull(payload.level_percent ?? payload.levelPercent);
+    const referenceHeight = numberOrNull(payload.reference_height_cm ?? payload.referenceHeightCm, 200);
+    const levelPercent = numberOrNull(payload.level_percent ?? payload.levelPercent, levelCm === null ? null : Math.max(0, Math.min(100, (levelCm / Math.max(1, referenceHeight)) * 100)));
     const alertCm = numberOrNull(payload.alert_cm ?? payload.alertCm, 80);
     const criticalCm = numberOrNull(payload.critical_cm ?? payload.criticalCm, 120);
+    const latitude = numberOrNull(payload.latitude ?? payload.lat);
+    const longitude = numberOrNull(payload.longitude ?? payload.lng);
+    const fence = waterGeofence();
+    const distance = latitude === null || longitude === null ? null : Math.round(distanceMeters(latitude, longitude, fence.centerLat, fence.centerLng));
+    const photoDataUrl = typeof payload.photo_data_url === "string" && payload.photo_data_url.startsWith("data:image/") ? payload.photo_data_url : null;
+    const photoSize = numberOrNull(payload.photo_size_bytes, photoDataUrl ? Math.round((photoDataUrl.length * 3) / 4) : 0);
     const event = {
-      id: payload.id || `WATER-1781863930268-ce103055d48a4`,
+      event_id: String(payload.event_id || payload.id || `WATER-${Date.now()}-${Math.random().toString(16).slice(2)}`),
       created_at: payload.created_at || new Date().toISOString(),
       device_id: payload.device_id || "HY-WATER-01",
+      source_type: sourceType,
       method: payload.method || "ultralytics-yolo-water-level",
       model_path: payload.model_path || "",
       conf: numberOrNull(payload.conf, 0.25),
@@ -205,19 +245,35 @@ async function handleYoloWaterLevel(request, response) {
       waterline_y: numberOrNull(payload.waterline_y ?? payload.waterlineY),
       level_cm: levelCm,
       level_percent: levelPercent,
-      reference_height_cm: numberOrNull(payload.reference_height_cm ?? payload.referenceHeightCm, 200),
+      reference_height_cm: referenceHeight,
       alert_cm: alertCm,
       critical_cm: criticalCm,
       severity: String(payload.severity || waterSeverity(levelCm, alertCm, criticalCm)),
-      confidence: numberOrNull(payload.confidence ?? payload.score, 0),
-      detections: Array.isArray(payload.detections) ? payload.detections : []
+      confidence: numberOrNull(payload.confidence ?? payload.score),
+      latitude,
+      longitude,
+      location_accuracy_m: numberOrNull(payload.location_accuracy_m ?? payload.accuracy),
+      geofence_name: payload.geofence_name || fence.name,
+      geofence_center_lat: fence.centerLat,
+      geofence_center_lng: fence.centerLng,
+      geofence_radius_m: fence.radiusM,
+      geofence_distance_m: distance,
+      geofence_valid: distance === null ? null : distance <= fence.radiusM,
+      location_label: payload.location_label || "",
+      reporter_contact: payload.reporter_contact || "",
+      note: payload.note || "",
+      photo_data_url: photoSize > 950000 ? null : photoDataUrl,
+      photo_mime: payload.photo_mime || (photoDataUrl ? "image/jpeg" : null),
+      photo_size_bytes: photoSize || 0,
+      detections: Array.isArray(payload.detections) ? payload.detections : [],
+      payload: payload.payload && typeof payload.payload === "object" ? payload.payload : {}
     };
 
     waterLevelEvents.push(event);
     if (waterLevelEvents.length > 240) {
       waterLevelEvents.splice(0, waterLevelEvents.length - 240);
     }
-    sendJson(response, 200, { ok: true, event });
+    sendJson(response, 200, { ok: true, event: safeWaterEvent(event) });
   } catch (error) {
     sendJson(response, 400, { error: "invalid_water_level_event", detail: String(error.message || error) });
   }

@@ -235,3 +235,34 @@ cd C:\Users\Administrator\OneDrive\เดสก์ท็อป\drone2\hardware\r
 ```
 
 Open `water-level.html` on the public site and set the endpoint to `http://127.0.0.1:4173/api/yolo/water-level` or the Pi/server IP.
+
+### Cloud water-level API + mobile photo reports
+
+The public `water-level.html` page now supports:
+
+- Cloudflare Pages Function route: `/api/yolo/water-level`
+- Supabase history table: `public.water_level_events`
+- Mobile camera/photo upload with GPS geofence validation
+- Calibration values for converting YOLO waterline pixels to centimeters
+
+Apply `supabase/setup.sql` again in Supabase SQL Editor (or your migration flow) so the `water_level_events` table, RLS policies, and grants exist. Because Supabase now may not expose new tables to the Data API automatically, also confirm `water_level_events` is exposed under Dashboard > Integrations > Data API settings.
+
+Recommended Cloudflare Pages environment variables for the public project:
+
+```text
+SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVER_ONLY_SERVICE_ROLE_KEY
+WATER_GEOFENCE_NAME=เธเธทเนเธเธ—เธตเนเธ เธฒเธฃเธเธดเธเธซเธฒเธ”เนเธซเธเน
+WATER_GEOFENCE_CENTER_LAT=7.0086
+WATER_GEOFENCE_CENTER_LNG=100.4747
+WATER_GEOFENCE_RADIUS_M=30000
+WATER_INGEST_TOKEN=change-this-token
+```
+
+Keep `SUPABASE_SERVICE_ROLE_KEY` only in Cloudflare Pages Functions environment variables. Do not put it in `site-config.js` or browser localStorage. If `WATER_INGEST_TOKEN` is set, YOLO devices must send it via the `X-Water-Ingest-Token` header.
+
+For the Pi script, set `water_level_server_url` to the Cloudflare URL, set `water_ingest_token`, then run:
+
+```bash
+python scripts/yolo_water_level_detector.py --config config.json --preview
+```

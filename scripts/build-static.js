@@ -83,6 +83,10 @@ function configJs() {
     droneTelemetryWs: process.env.DRONE_TELEMETRY_WS || "",
     droneVideoUrl: process.env.DRONE_VIDEO_URL || "",
     waterLevelUrl: process.env.WATER_LEVEL_URL || "",
+    waterGeofenceName: process.env.WATER_GEOFENCE_NAME || "พื้นที่ภารกิจหาดใหญ่",
+    waterGeofenceCenterLat: Number(process.env.WATER_GEOFENCE_CENTER_LAT || 7.0086),
+    waterGeofenceCenterLng: Number(process.env.WATER_GEOFENCE_CENTER_LNG || 100.4747),
+    waterGeofenceRadiusM: Number(process.env.WATER_GEOFENCE_RADIUS_M || 30000),
     autoStartCamera: process.env.DRONE_AUTO_START_CAMERA !== "false",
     droneAccessHash: process.env.DRONE_ACCESS_HASH || sha256(droneAccessCode)
   };
