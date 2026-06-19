@@ -94,11 +94,14 @@ async function handlePiMatches(request, response) {
       is_match: Boolean(payload.is_match),
       method: payload.method || "opencv-sface-trained",
       detector: payload.detector || "YuNet",
+      cosine: payload.cosine,
+      similarity: payload.similarity,
       lat: Number(payload.lat) || 7.0086,
       lng: Number(payload.lng) || 100.4747,
       bbox: payload.bbox || null,
       frame_width: Number(payload.frame_width || payload.frameWidth) || null,
-      frame_height: Number(payload.frame_height || payload.frameHeight) || null
+      frame_height: Number(payload.frame_height || payload.frameHeight) || null,
+      faces: Array.isArray(payload.faces) ? payload.faces : []
     };
 
     fs.mkdirSync(path.dirname(piMatchesPath), { recursive: true });

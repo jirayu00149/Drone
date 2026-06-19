@@ -7,16 +7,16 @@
   const TELEMETRY_RETRY_MS = 3500;
   const TRAINED_AI_POLL_MS = 1800;
   const YOLO_DETECTION_POLL_MS = 650;
-  const TRAINED_AI_MATCH_URLS = [
+  const TRAINED_AI_MATCH_URLS = Array.from(new Set([
     config.trainedAiMatchesUrl,
-    `${window.location.origin}/api/pi/matches`,
-    window.location.origin.includes(":4173") ? "" : "http://127.0.0.1:4173/api/pi/matches"
-  ].filter(Boolean);
-  const YOLO_DETECTION_URLS = [
+    window.location.port === "4173" ? `${window.location.origin}/api/pi/matches` : "",
+    "http://127.0.0.1:4173/api/pi/matches"
+  ].filter(Boolean)));
+  const YOLO_DETECTION_URLS = Array.from(new Set([
     config.yoloDetectionsUrl,
-    `${window.location.origin}/api/yolo/detections`,
-    window.location.origin.includes(":4173") ? "" : "http://127.0.0.1:4173/api/yolo/detections"
-  ].filter(Boolean);
+    window.location.port === "4173" ? `${window.location.origin}/api/yolo/detections` : "",
+    "http://127.0.0.1:4173/api/yolo/detections"
+  ].filter(Boolean)));
   const FACE_SCAN_PASSES = [
     { name: "full", transform: { x: 0, y: 0, w: 1, h: 1 } },
     { name: "center", transform: { x: 0.18, y: 0.08, w: 0.64, h: 0.76 } },
@@ -142,6 +142,229 @@
       offsetLeft: Math.round(visualViewport?.offsetLeft || 0),
       offsetTop: Math.round(visualViewport?.offsetTop || 0)
     };
+  }
+
+  function injectHudStyles() {
+    if (document.getElementById('drone-hud-styles')) return;
+    const style = document.createElement("style");
+    style.id = 'drone-hud-styles';
+    style.textContent = `
+      .face-box, .object-box {
+        position: absolute;
+        pointer-events: none;
+        z-index: 10;
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        border-radius: 4px;
+      }
+      .face-box {
+        border: 1.5px solid rgba(0, 238, 255, 0.6);
+        background: 
+          linear-gradient(180deg, rgba(0, 238, 255, 0.15) 0%, transparent 40%, rgba(0, 238, 255, 0.15) 100%),
+          repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 238, 255, 0.1) 3px, rgba(0, 238, 255, 0.1) 4px);
+        box-shadow: 0 0 20px rgba(0, 238, 255, 0.3), inset 0 0 15px rgba(0, 238, 255, 0.4);
+        animation: blue-breathing 1.5s infinite alternate;
+      }
+      @keyframes blue-breathing {
+        from { box-shadow: 0 0 10px rgba(0, 238, 255, 0.2), inset 0 0 10px rgba(0, 238, 255, 0.2); }
+        to { box-shadow: 0 0 25px rgba(0, 238, 255, 0.6), inset 0 0 20px rgba(0, 238, 255, 0.5); border-color: rgba(0, 238, 255, 0.9); }
+      }
+      .object-box {
+        border: 1.5px solid rgba(255, 187, 0, 0.5);
+        background: linear-gradient(135deg, rgba(255, 187, 0, 0.1) 0%, transparent 50%, rgba(255, 187, 0, 0.05) 100%);
+        box-shadow: 0 0 15px rgba(255, 187, 0, 0.2), inset 0 0 20px rgba(255, 187, 0, 0.1);
+      }
+      .face-box.sface-match {
+        border: 1.5px solid rgba(255, 50, 50, 0.8);
+        background: radial-gradient(circle at center, rgba(255, 50, 50, 0.2) 0%, rgba(255, 50, 50, 0.05) 100%);
+        box-shadow: 0 0 30px rgba(255, 50, 50, 0.5), inset 0 0 30px rgba(255, 50, 50, 0.3);
+        animation: target-lock-pulse 0.5s infinite alternate;
+        border-radius: 0;
+      }
+      .face-box.ai-original-box {
+        border: 2px solid #1f64ff;
+        background: transparent;
+        box-shadow: 0 0 0 1px rgba(5, 14, 35, 0.45);
+        border-radius: 0;
+        animation: none;
+        overflow: visible;
+      }
+      .face-box.ai-original-box.sface-match {
+        border-color: #1f64ff;
+        background: transparent;
+        box-shadow: 0 0 0 1px rgba(5, 14, 35, 0.45);
+        animation: none;
+      }
+      .face-box.ai-original-box .ai-box-tag {
+        position: absolute;
+        left: -2px;
+        right: -2px;
+        min-height: 18px;
+        padding: 2px 4px;
+        display: flex;
+        align-items: center;
+        background: #1f64ff;
+        color: #fff;
+        font-family: Consolas, "Courier New", monospace;
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: 0;
+        text-transform: uppercase;
+        text-shadow: none;
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+      .face-box.ai-original-box .ai-box-tag.top {
+        top: -22px;
+      }
+      .face-box.ai-original-box .ai-box-tag.bottom {
+        bottom: -22px;
+      }
+      .face-box.ai-original-box::after,
+      .face-box.ai-original-box .hud-crosshair,
+      .face-box.ai-original-box .hud-corner-tl,
+      .face-box.ai-original-box .hud-corner-tr,
+      .face-box.ai-original-box .hud-corner-bl,
+      .face-box.ai-original-box .hud-corner-br {
+        display: none;
+      }
+      @keyframes target-lock-pulse {
+        from { transform: scale(1); box-shadow: 0 0 20px rgba(255,50,50,0.4), inset 0 0 20px rgba(255,50,50,0.2); border-color: rgba(255,50,50,0.6); }
+        to { transform: scale(1.04); box-shadow: 0 0 40px rgba(255,50,50,0.9), inset 0 0 40px rgba(255,50,50,0.5); border-color: rgba(255,50,50,1); border-width: 2px; }
+      }
+      .face-box::after, .object-box::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: -10%;
+        width: 100%;
+        height: 4px;
+        background: rgba(0, 238, 255, 0.8);
+        box-shadow: 0 0 15px 3px rgba(0, 238, 255, 0.6);
+        animation: laser-scan 2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+        opacity: 0.8;
+      }
+      .object-box::after {
+        background: rgba(255, 187, 0, 0.8);
+        box-shadow: 0 0 15px 3px rgba(255, 187, 0, 0.6);
+      }
+      .face-box.sface-match::after {
+        background: rgba(255, 50, 50, 0.9);
+        box-shadow: 0 0 20px 4px rgba(255, 50, 50, 0.8);
+        animation: laser-scan-fast 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+      }
+      @keyframes laser-scan {
+        0% { top: 0%; opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { top: 98%; opacity: 0; }
+      }
+      @keyframes laser-scan-fast {
+        0% { top: 0%; }
+        100% { top: 96%; }
+      }
+      .hud-corner-tr, .hud-corner-bl, .hud-corner-tl, .hud-corner-br {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border-color: rgba(0, 238, 255, 0.9);
+        border-style: solid;
+        z-index: 11;
+        transition: all 0.2s;
+        filter: drop-shadow(0 0 4px rgba(0, 238, 255, 0.8));
+      }
+      .object-box .hud-corner-tl, .object-box .hud-corner-tr, .object-box .hud-corner-bl, .object-box .hud-corner-br { border-color: #ffbb00; filter: drop-shadow(0 0 4px rgba(255, 187, 0, 0.8)); }
+      .face-box.sface-match .hud-corner-tl, .face-box.sface-match .hud-corner-tr, .face-box.sface-match .hud-corner-bl, .face-box.sface-match .hud-corner-br { border-color: #ff3333; width: 30px; height: 30px; border-width: 4px !important; }
+      .hud-corner-tl { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-top-left-radius: 4px; }
+      .hud-corner-br { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-bottom-right-radius: 4px; }
+      .hud-corner-tr { top: -2px; right: -2px; border-width: 3px 3px 0 0; border-top-right-radius: 4px; }
+      .hud-corner-bl { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; border-bottom-left-radius: 4px; }
+      
+      .hud-crosshair {
+        position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; transform: translate(-50%, -50%); pointer-events: none; opacity: 0.85;
+      }
+      .hud-crosshair::before, .hud-crosshair::after { content: ''; position: absolute; background: rgba(0, 238, 255, 0.9); box-shadow: 0 0 8px rgba(0, 238, 255, 0.8); }
+      .hud-crosshair::before { top: 50%; left: 0; width: 100%; height: 1.5px; transform: translateY(-50%); }
+      .hud-crosshair::after { left: 50%; top: 0; width: 1.5px; height: 100%; transform: translateX(-50%); }
+      .hud-crosshair-center {
+        position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; border: 1.5px solid rgba(0, 238, 255, 0.9); border-radius: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 8px rgba(0, 238, 255, 0.8);
+      }
+      .object-box .hud-crosshair::before, .object-box .hud-crosshair::after { background: #ffbb00; box-shadow: 0 0 8px #ffbb00; }
+      .object-box .hud-crosshair-center { border-color: #ffbb00; box-shadow: 0 0 8px #ffbb00; }
+      .face-box.sface-match .hud-crosshair::before, .face-box.sface-match .hud-crosshair::after { background: #ff3333; box-shadow: 0 0 10px #ff3333; opacity: 1; }
+      .face-box.sface-match .hud-crosshair-center { border-color: #ff3333; box-shadow: 0 0 10px #ff3333; background: rgba(255, 50, 50, 0.5); }
+      .face-box.sface-match .hud-crosshair { animation: rotate-crosshair 3s linear infinite; }
+      @keyframes rotate-crosshair { 100% { transform: translate(-50%, -50%) rotate(90deg); } }
+      
+      .object-box-label {
+        position: absolute;
+        top: -34px; left: -2px;
+        background: rgba(255, 187, 0, 0.9);
+        color: #111;
+        font-size: 13px;
+        font-family: 'Consolas', 'Courier New', monospace;
+        font-weight: 900;
+        padding: 4px 10px;
+        white-space: nowrap;
+        clip-path: polygon(0 0, 100% 0, 92% 100%, 0 100%);
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 -4px 15px rgba(0,0,0,0.5);
+        z-index: 12;
+        text-transform: uppercase;
+        border-bottom: 2px solid #ffbb00;
+      }
+      .face-box .object-box-label {
+        background: rgba(0, 30, 45, 0.85);
+        border: 1px solid rgba(0, 238, 255, 0.4);
+        border-bottom: 2px solid #00eeff;
+        color: #00eeff;
+        text-shadow: 0 0 8px rgba(0, 238, 255, 0.6);
+      }
+      .face-box.sface-match .object-box-label {
+        background: rgba(255, 50, 50, 0.95);
+        border-bottom: 2px solid #ff0000;
+        color: #ffffff;
+        top: -36px;
+        font-size: 14px;
+      }
+      .hud-icon {
+        width: 18px;
+        height: 18px;
+        filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function playMatchAlert() {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      function beep(freq, startTime, duration) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'square';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.1, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      }
+      const now = ctx.currentTime;
+      beep(880, now, 0.1); // เสียงติ๊ดที่ 1 (เตือนการพบ)
+      beep(1760, now + 0.15, 0.2); // เสียงติ๊ดที่ 2 (เสียงสูง ยืนยันการล็อคเป้า)
+    } catch (e) {
+      console.warn("Audio playback failed", e);
+    }
   }
 
   function syncViewportVars() {
@@ -298,9 +521,15 @@
         const height = R.clamp(box.height * scale, 2, layerHeight - y);
         const confidence = box.confidence > 1 ? box.confidence : box.confidence * 100;
         const label = `${box.label} ${Math.round(confidence)}%`;
+        const YoloIcon = `<svg class="hud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
         return `
           <span class="object-box" data-class="${R.escapeHtml(box.classId)}" style="left:${x}px; top:${y}px; width:${width}px; height:${height}px;">
-            <span class="object-box-label">${R.escapeHtml(label)}</span>
+            <span class="object-box-label">${YoloIcon} <span>${R.escapeHtml(label)}</span></span>
+            <span class="hud-crosshair"><span class="hud-crosshair-center"></span></span>
+            <span class="hud-corner-tl"></span>
+            <span class="hud-corner-tr"></span>
+            <span class="hud-corner-bl"></span>
+            <span class="hud-corner-br"></span>
           </span>
         `;
       })
@@ -394,7 +623,7 @@
     return boxes
       .filter((box) => isPlausibleFaceBox(box, sourceWidth, sourceHeight))
       .sort((a, b) => b.width * b.height - a.width * a.height)
-      .slice(0, 3);
+      .slice(0, 8);
   }
 
   function vectorFromDetectedFace(box) {
@@ -427,12 +656,36 @@
 
     els.faceBoxes.innerHTML = safeBoxes
       .map((box) => {
-        const faceBox = compactFaceBox(box, sourceWidth, sourceHeight);
+        const detectorStyle = options.detectorStyle !== false;
+        const faceBox = (options.useOriginalBox || detectorStyle) ? box : compactFaceBox(box, sourceWidth, sourceHeight);
         const x = R.clamp(faceBox.x * scale + offsetX, 0, layerWidth - 12);
         const y = R.clamp(faceBox.y * scale + offsetY, 0, layerHeight - 12);
         const width = R.clamp(faceBox.width * scale, 20, layerWidth - x);
         const height = R.clamp(faceBox.height * scale, 24, layerHeight - y);
-        return `<span class="face-box" style="left:${x}px; top:${y}px; width:${width}px; height:${height}px;"></span>`;
+        const customClassValue = box.className || options.className || "";
+        const classNames = [];
+        if (detectorStyle || options.useOriginalBox) classNames.push("ai-original-box");
+        if (customClassValue) classNames.push(customClassValue);
+        const customClass = classNames.length ? ` ${classNames.join(" ")}` : "";
+        const label = box.label || options.label;
+        const logo = box.logo || options.logo || "";
+        const topLabel = box.topLabel || options.topLabel || (detectorStyle ? (label || "FACE") : "");
+        const bottomLabel = box.bottomLabel || options.bottomLabel || (detectorStyle ? "MATCH: --" : "");
+        const labelHtml = detectorStyle && (topLabel || bottomLabel)
+          ? `${topLabel ? `<span class="ai-box-tag top">${R.escapeHtml(topLabel)}</span>` : ""}${bottomLabel ? `<span class="ai-box-tag bottom">${R.escapeHtml(bottomLabel)}</span>` : ""}`
+          : label
+            ? `<span class="object-box-label">${logo} <span>${R.escapeHtml(label)}</span></span>`
+            : "";
+        return `
+          <span class="face-box${customClass}" style="left:${x}px; top:${y}px; width:${width}px; height:${height}px;">
+            ${labelHtml}
+            <span class="hud-crosshair"><span class="hud-crosshair-center"></span></span>
+            <span class="hud-corner-tl"></span>
+            <span class="hud-corner-tr"></span>
+            <span class="hud-corner-bl"></span>
+            <span class="hud-corner-br"></span>
+          </span>
+        `;
       })
       .join("");
 
@@ -729,13 +982,17 @@
   }
 
   async function detectFacesInFrame() {
+    const NativeIcon = `<svg class="hud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="8.5" r="1.5"/><path d="M9 15c1 1 5 1 6 0"/></svg>`;
+
     const mediaPipeBoxes = await detectFacesWithMediaPipe();
     if (mediaPipeBoxes.length) {
       renderFaceBoxes(mediaPipeBoxes, els.frameCanvas.width, els.frameCanvas.height, {
         matchText: `MediaPipe AI face detector (${state.mediaPipePassName})`,
         confidenceText: "Face verified before database match",
         modeText: "AI detector active",
-        tone: "detected"
+        tone: "detected",
+        label: "MediaPipe AI",
+        logo: NativeIcon
       });
       return { supported: true, boxes: mediaPipeBoxes, engine: "mediapipe" };
     }
@@ -746,7 +1003,9 @@
         matchText: "Native AI face detector",
         confidenceText: "Face verified before database match",
         modeText: "Browser face detector active",
-        tone: "detected"
+        tone: "detected",
+        label: "Native AI",
+        logo: NativeIcon
       });
       return { supported: true, boxes: nativeBoxes, engine: "native" };
     }
@@ -860,6 +1119,28 @@
     }
   }
 
+  async function refreshPeopleFromDatabase(options = {}) {
+    const hasSupabaseConfig = Boolean(config.supabaseUrl && config.supabasePublishableKey);
+    if (!hasSupabaseConfig || typeof R.loadPeopleFromDatabase !== "function") return false;
+
+    try {
+      const people = await R.loadPeopleFromDatabase();
+      state.people = people;
+      renderMissionMeta();
+      renderAdminCases();
+      renderPins();
+      if (!options.silent) {
+        updateScanStatus(`โหลดฐานข้อมูล ${people.length} เคส`, "");
+      }
+      return true;
+    } catch (error) {
+      console.warn("Cannot load Supabase missing_persons", error);
+      if (!options.silent) {
+        updateScanStatus("ดึงฐานข้อมูลไม่สำเร็จ ใช้ข้อมูลในเครื่อง", "is-warning");
+      }
+      return false;
+    }
+  }
   function tickTelemetry() {
     if (state.connection.status === "connected" && state.connection.lastMessageAt && Date.now() - state.connection.lastMessageAt > 8000) {
       setDroneConnection("waiting", "Raspberry Pi signal lost");
@@ -947,7 +1228,9 @@
       matchText: "Raspberry Pi face tracker",
       confidenceText: payload.confidence ? `Confidence ${payload.confidence}%` : "External detector locked",
       modeText: "Following target from Pi",
-      tone: "detected"
+      tone: "detected",
+      label: payload.confidence ? `Pi Tracker ${payload.confidence}%` : "Pi Tracker",
+      useOriginalBox: true
     });
   }
 
@@ -1184,7 +1467,7 @@
     const target = state.people.find((person) => person.status !== "found") || state.people[0];
     state.lastProbeVector = target ? R.jitterVector(target.vector, "demo-frame-hatyai-flood", 0.04) : R.vectorFromCanvas(canvas);
     state.lastSnapshot = canvasSnapshot();
-    runMatch(state.lastProbeVector, { autoCapture: true, autoConfirm: false });
+    runMatch(state.lastProbeVector, { autoCapture: true, autoConfirm: true });
   }
 
   function renderMatches(matches, threshold) {
@@ -1229,6 +1512,21 @@
 
     renderMatches(state.lastMatches, threshold);
     const top = state.lastMatches[0];
+    if (top && options.box) {
+      renderFaceBoxes(
+        [
+          {
+            ...options.box,
+            className: top.score >= threshold ? "sface-match" : "",
+            topLabel: top.person.name || top.person.id,
+            bottomLabel: `MATCH: ${top.score.toFixed(2)}%`
+          }
+        ],
+        options.sourceWidth || els.frameCanvas.width,
+        options.sourceHeight || els.frameCanvas.height,
+        { useOriginalBox: true }
+      );
+    }
     if (top && top.score >= threshold) {
       updateScanStatus(`พบ candidate ${top.score}% ${options.autoConfirm === true ? "ยืนยันอัตโนมัติ" : "รอยืนยัน"}`, "is-match");
       updateAiHud({
@@ -1311,7 +1609,7 @@
       name: `Trained AI case ${personId}`,
       age: "",
       priority: "high",
-      lastSeen: "Detected by Raspberry Pi SFace scanner",
+      lastSeen: `Detected by Raspberry Pi ${trainedAiShortLabel(event)} scanner`,
       reporterContact: "Raspberry Pi edge AI",
       note: "Created from trained AI match event.",
       initials: personId.slice(0, 2).toUpperCase(),
@@ -1330,7 +1628,7 @@
 
   function createTrainedAiLog(event, person, status) {
     const log = {
-      id: event.id || `SFACE-${Date.now()}`,
+      id: event.id || `TRAINED-AI-${Date.now()}`,
       personId: person.id,
       personName: person.name,
       score: Number(event.score) || 0,
@@ -1369,18 +1667,53 @@
     return { x, y, width, height };
   }
 
+  function trainedAiMethodLabel(event) {
+    const method = String(event.method || "").toLowerCase();
+    if (method.includes("facenet")) return "FaceNet trained AI";
+    if (method.includes("sface") || method.includes("opencv")) return "OpenCV SFace trained AI";
+    return event.method ? String(event.method).replace(/[-_]+/g, " ") : "Trained AI";
+  }
+
+  function trainedAiShortLabel(event) {
+    const label = trainedAiMethodLabel(event);
+    if (label.includes("FaceNet")) return "FaceNet AI";
+    if (label.includes("SFace")) return "SFace AI";
+    return "Trained AI";
+  }
+
+  function trainedAiFaceEvents(event) {
+    const faces = Array.isArray(event.faces) ? event.faces : [];
+    if (!faces.length) return [event];
+    return faces.map((face, index) => ({
+      ...event,
+      ...face,
+      id: face.id || `${event.id || "trained-ai"}-face-${face.face_index || index + 1}`,
+      face_index: face.face_index || index + 1,
+      person_id: face.person_id || event.person_id,
+      score: Number(face.score ?? event.score) || 0,
+      threshold: Number(face.threshold ?? event.threshold) || 60,
+      is_match: Boolean(face.is_match ?? event.is_match),
+      method: face.method || event.method,
+      detector: face.detector || event.detector,
+      bbox: face.bbox || face.box || event.bbox,
+      frame_width: Number(face.frame_width || face.frameWidth || event.frame_width || event.frameWidth) || null,
+      frame_height: Number(face.frame_height || face.frameHeight || event.frame_height || event.frameHeight) || null
+    }));
+  }
+
   function renderTrainedAiResult(event, person, isMatch) {
     if (!els.matchResults) return;
     const score = Number(event.score) || 0;
     const threshold = Number(event.threshold || els.thresholdRange.value || 60);
     const time = event.created_at ? new Date(event.created_at).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }) : "--:--";
+    const methodLabel = trainedAiMethodLabel(event);
     els.matchResults.innerHTML = `
       <article class="match-card ${isMatch ? "alert" : ""}">
         <div class="case-top">
           ${R.avatarHtml(person)}
           <div class="case-main">
             <strong>${R.escapeHtml(person.name)}</strong>
-            <span>OpenCV SFace trained AI · ${R.escapeHtml(event.detector || "YuNet")} · ${time}</span>
+            <span>${R.escapeHtml(methodLabel)} · ${R.escapeHtml(event.detector || "AI detector")} · ${time}</span>
           </div>
           <span class="status-badge ${isMatch ? "found" : "review"}">${isMatch ? "พบแล้ว" : "รอตรวจสอบ"}</span>
         </div>
@@ -1399,40 +1732,80 @@
     if (state.processedTrainedAiIds.has(eventId)) return;
     state.processedTrainedAiIds.add(eventId);
 
-    const threshold = Number(event.threshold || els.thresholdRange.value || 60);
-    const score = Number(event.score) || 0;
-    const isMatch = Boolean(event.is_match) || score >= threshold;
-    const person = ensureTrainedAiPerson(event);
-    const box = eventBoxFromTrainedAi(event);
+    const faceEvents = trainedAiFaceEvents(event);
+    const anyMatch = faceEvents.some((faceEvent) => Boolean(faceEvent.is_match) || Number(faceEvent.score) >= Number(faceEvent.threshold || els.thresholdRange.value || 60));
+
+    if (anyMatch) {
+      playMatchAlert();
+    }
+
+    const MatchIcon = `<svg class="hud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`;
+    const AiIcon = `<svg class="hud-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3a2 2 0 0 0-2 2v4M21 5a2 2 0 0 0-2-2h-4M3 15v4a2 2 0 0 0 2 2h4M15 21h4a2 2 0 0 0 2-2v-4"/><path d="M9 9h.01M15 9h.01M9 15c1 1 5 1 6 0"/></svg>`;
     const sourceWidth = Number(event.frame_width || event.frameWidth) || els.frameCanvas.width;
     const sourceHeight = Number(event.frame_height || event.frameHeight) || els.frameCanvas.height;
+    const renderBoxes = [];
+    let topResult = null;
 
-    if (box) {
-      renderFaceBoxes([box], sourceWidth, sourceHeight, {
-        matchText: "OpenCV SFace trained AI",
-        confidenceText: `Match confidence ${score}%`,
-        modeText: isMatch ? "Status sent to rescue database" : "Waiting for threshold",
-        tone: isMatch ? "match" : "detected"
+    faceEvents.forEach((faceEvent) => {
+      const threshold = Number(faceEvent.threshold || els.thresholdRange.value || 60);
+      const score = Number(faceEvent.score) || 0;
+      const isMatch = Boolean(faceEvent.is_match) || score >= threshold;
+      const person = ensureTrainedAiPerson(faceEvent);
+      const box = eventBoxFromTrainedAi(faceEvent);
+      const methodLabel = trainedAiMethodLabel(faceEvent);
+      const shortLabel = trainedAiShortLabel(faceEvent);
+
+      if (box) {
+        renderBoxes.push({
+          ...box,
+          className: isMatch ? "sface-match" : "",
+          topLabel: String(person.name || person.id || shortLabel),
+          bottomLabel: `MATCH: ${score.toFixed(2)}%`,
+          label: `${person.id} ${score}%`,
+          logo: isMatch ? MatchIcon : AiIcon
+        });
+      }
+
+      const log = createTrainedAiLog(
+        faceEvent,
+        person,
+        isMatch ? `${methodLabel} match >= ${threshold}%` : `${methodLabel} candidate below threshold`
+      );
+      els.latInput.value = Number(log.lat).toFixed(6);
+      els.lngInput.value = Number(log.lng).toFixed(6);
+
+      if (isMatch && person.status !== "found") {
+        updatePersonStatus(person.id, "found", log);
+      } else if (!isMatch && person.status === "searching") {
+        updatePersonStatus(person.id, "review", log);
+      }
+
+      if (!topResult || score > topResult.score) {
+        topResult = { event: faceEvent, person, isMatch, score, methodLabel, shortLabel };
+      }
+    });
+
+    if (renderBoxes.length && topResult) {
+      renderFaceBoxes(renderBoxes, sourceWidth, sourceHeight, {
+        matchText: topResult.methodLabel,
+        confidenceText: `Faces ${renderBoxes.length} · best ${topResult.score}%`,
+        modeText: anyMatch ? "Status sent to rescue database" : "Waiting for threshold",
+        tone: anyMatch ? "match" : "detected",
+        useOriginalBox: true
       });
     }
 
-    const log = createTrainedAiLog(
-      event,
-      person,
-      isMatch ? `OpenCV SFace trained AI match >= ${threshold}%` : "OpenCV SFace candidate below threshold"
-    );
-    els.latInput.value = Number(log.lat).toFixed(6);
-    els.lngInput.value = Number(log.lng).toFixed(6);
-
-    if (isMatch && person.status !== "found") {
-      updatePersonStatus(person.id, "found", log);
-    } else if (!isMatch && person.status === "searching") {
-      updatePersonStatus(person.id, "review", log);
+    if (topResult) {
+      renderTrainedAiResult(topResult.event, topResult.person, topResult.isMatch);
+      setDroneConnection("connected", `${topResult.methodLabel} linked`);
+      updateScanStatus(
+        topResult.isMatch
+          ? `${topResult.shortLabel} found ${topResult.person.id} ${topResult.score}%`
+          : `${topResult.shortLabel} candidates ${faceEvents.length} face(s)`,
+        topResult.isMatch ? "is-match" : "is-warning"
+      );
     }
 
-    renderTrainedAiResult(event, person, isMatch);
-    setDroneConnection("connected", "OpenCV SFace trained AI linked");
-    updateScanStatus(isMatch ? `SFace trained AI found ${person.id} ${score}%` : `SFace candidate ${person.id} ${score}%`, isMatch ? "is-match" : "is-warning");
     renderMissionMeta();
     renderAdminCases();
     renderPins();
@@ -1537,7 +1910,13 @@
     }
     state.lastProbeVector = vectorFromDetectedFace(detection.boxes[0]);
     state.lastSnapshot = canvasSnapshot();
-    runMatch(state.lastProbeVector, { autoCapture: true, autoConfirm: false });
+    runMatch(state.lastProbeVector, {
+      autoCapture: true,
+      autoConfirm: true,
+      box: detection.boxes[0],
+      sourceWidth: els.frameCanvas.width,
+      sourceHeight: els.frameCanvas.height
+    });
   }
 
   function startAutoScan() {
@@ -1658,7 +2037,13 @@
     }
     state.lastProbeVector = vectorFromDetectedFace(detection.boxes[0]);
     state.lastSnapshot = canvasSnapshot();
-    runMatch(state.lastProbeVector, { autoCapture: true, autoConfirm: false });
+    runMatch(state.lastProbeVector, {
+      autoCapture: true,
+      autoConfirm: true,
+      box: detection.boxes[0],
+      sourceWidth: els.frameCanvas.width,
+      sourceHeight: els.frameCanvas.height
+    });
   }
 
   async function handleUpload(event) {
@@ -1676,7 +2061,13 @@
     }
     state.lastProbeVector = vectorFromDetectedFace(detection.boxes[0]);
     state.lastSnapshot = canvasSnapshot();
-    runMatch(state.lastProbeVector, { autoCapture: true, autoConfirm: false });
+    runMatch(state.lastProbeVector, {
+      autoCapture: true,
+      autoConfirm: true,
+      box: detection.boxes[0],
+      sourceWidth: els.frameCanvas.width,
+      sourceHeight: els.frameCanvas.height
+    });
     event.target.value = "";
   }
 
@@ -1877,6 +2268,7 @@
     document.addEventListener("drone:access-unlocked", autoConnectFlightSession);
   }
 
+  injectHudStyles();
   syncViewportVars();
   bindEvents();
   renderMissionMeta();
@@ -1885,6 +2277,7 @@
   renderCommandLog();
   renderAdminCases();
   renderPins();
+  refreshPeopleFromDatabase({ silent: false });
   pollTrainedAiMatches();
   pollYoloDetections();
   updateScanStatus("พร้อมสแกน", "");
@@ -1893,6 +2286,7 @@
   }
   setInterval(tickTelemetry, 3500);
   setInterval(renderMissionMeta, 15000);
+  setInterval(() => refreshPeopleFromDatabase({ silent: true }), 60000);
   setInterval(pollTrainedAiMatches, TRAINED_AI_POLL_MS);
   setInterval(pollYoloDetections, YOLO_DETECTION_POLL_MS);
 })();

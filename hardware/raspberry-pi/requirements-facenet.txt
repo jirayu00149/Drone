@@ -1,0 +1,8 @@
+# Optional FaceNet stack. Keep separate from requirements-pi.txt to avoid changing
+# the lighter OpenCV SFace/YOLO setup.
+numpy==1.26.4
+Pillow==10.2.0
+torch==2.2.2
+torchvision==0.17.2
+facenet-pytorch==2.6.0
+opencv-python==4.10.0.84

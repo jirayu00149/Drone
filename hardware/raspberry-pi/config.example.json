@@ -5,6 +5,8 @@
   "scan_interval_seconds": 1.0,
   "match_threshold_percent": 60,
   "detection_threshold": 0.18,
+  "facenet_similarity_threshold": 0.65,
+  "min_face_size": 40,
   "yolo_model_path": "C:\\Users\\Administrator\\Documents\\Codex\\2026-06-18\\ai\\outputs\\face_scan_ai\\models\\drone_person_detector.pt",
   "yolo_conf": 0.25,
   "yolo_imgsz": 640,

@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import json
 import urllib.request
+import tempfile
+import shutil
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
@@ -13,8 +15,8 @@ import cv2
 import numpy as np
 
 
-YUNET_URL = "https://cdn.jsdelivr.net/gh/opencv/opencv_zoo@main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
-SFACE_URL = "https://cdn.jsdelivr.net/gh/opencv/opencv_zoo@main/models/face_recognition_sface/face_recognition_sface_2021dec.onnx"
+YUNET_URL = "https://media.githubusercontent.com/media/opencv/opencv_zoo/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
+SFACE_URL = "https://media.githubusercontent.com/media/opencv/opencv_zoo/main/models/face_recognition_sface/face_recognition_sface_2021dec.onnx"
 YUNET_NAME = "face_detection_yunet_2023mar.onnx"
 SFACE_NAME = "face_recognition_sface_2021dec.onnx"
 SCAN_SIZE = (640, 640)
@@ -64,7 +66,18 @@ def ensure_opencv_face_models(model_cache: Path) -> Tuple[Path, Path]:
     sface_path = model_cache / SFACE_NAME
     download_file(YUNET_URL, yunet_path)
     download_file(SFACE_URL, sface_path)
-    return yunet_path, sface_path
+    
+    # Copy to temp dir to avoid non-ASCII path issues in OpenCV on Windows (e.g. Thai characters in path)
+    temp_dir = Path(tempfile.gettempdir()) / "opencv_zoo_safe"
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    safe_yunet = temp_dir / YUNET_NAME
+    safe_sface = temp_dir / SFACE_NAME
+    if not safe_yunet.exists() or safe_yunet.stat().st_size != yunet_path.stat().st_size:
+        shutil.copy2(yunet_path, safe_yunet)
+    if not safe_sface.exists() or safe_sface.stat().st_size != sface_path.stat().st_size:
+        shutil.copy2(sface_path, safe_sface)
+        
+    return safe_yunet, safe_sface
 
 
 def create_yunet_detector(yunet_path: Path, score_threshold: float = 0.22):
@@ -112,8 +125,28 @@ def map_face_to_frame(face: np.ndarray, crop_rect: Tuple[int, int, int, int]) ->
     return mapped
 
 
-def detect_best_face(detector, frame: np.ndarray) -> Optional[FaceDetection]:
-    best: Optional[FaceDetection] = None
+def bbox_iou(first: Tuple[int, int, int, int], second: Tuple[int, int, int, int]) -> float:
+    first_left, first_top, first_width, first_height = first
+    second_left, second_top, second_width, second_height = second
+    first_right = first_left + first_width
+    first_bottom = first_top + first_height
+    second_right = second_left + second_width
+    second_bottom = second_top + second_height
+
+    overlap_left = max(first_left, second_left)
+    overlap_top = max(first_top, second_top)
+    overlap_right = min(first_right, second_right)
+    overlap_bottom = min(first_bottom, second_bottom)
+    overlap_width = max(0, overlap_right - overlap_left)
+    overlap_height = max(0, overlap_bottom - overlap_top)
+    overlap_area = overlap_width * overlap_height
+    first_area = max(1, first_width * first_height)
+    second_area = max(1, second_width * second_height)
+    return overlap_area / max(1, first_area + second_area - overlap_area)
+
+
+def detect_faces(detector, frame: np.ndarray, max_faces: int = 8) -> List[FaceDetection]:
+    candidates: List[Tuple[float, FaceDetection]] = []
     for scan_pass in SCAN_PASSES:
         scan_image, crop_rect = crop_for_pass(frame, scan_pass)
         detector.setInputSize(SCAN_SIZE)
@@ -126,14 +159,31 @@ def detect_best_face(detector, frame: np.ndarray) -> Optional[FaceDetection]:
             score = float(mapped[14]) if len(mapped) > 14 else 0.0
             area = max(1.0, float(w * h))
             rank = score * 10_000.0 + area
-            if best is None or rank > best.score * 10_000.0 + best.bbox[2] * best.bbox[3]:
-                best = FaceDetection(
-                    face=mapped,
-                    bbox=(int(x), int(y), int(w), int(h)),
-                    score=score,
-                    pass_name=scan_pass.name,
+            candidates.append(
+                (
+                    rank,
+                    FaceDetection(
+                        face=mapped,
+                        bbox=(int(x), int(y), int(w), int(h)),
+                        score=score,
+                        pass_name=scan_pass.name,
+                    ),
                 )
-    return best
+            )
+
+    selected: List[FaceDetection] = []
+    for _, detection in sorted(candidates, key=lambda item: item[0], reverse=True):
+        if any(bbox_iou(detection.bbox, existing.bbox) > 0.45 for existing in selected):
+            continue
+        selected.append(detection)
+        if len(selected) >= max_faces:
+            break
+    return selected
+
+
+def detect_best_face(detector, frame: np.ndarray) -> Optional[FaceDetection]:
+    faces = detect_faces(detector, frame, max_faces=1)
+    return faces[0] if faces else None
 
 
 def l2_normalize(vector: np.ndarray) -> np.ndarray:

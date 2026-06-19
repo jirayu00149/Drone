@@ -86,7 +86,8 @@ def train(args: argparse.Namespace) -> None:
             continue
 
         for image_path in images:
-            image = cv2.imread(str(image_path))
+            # Use np.fromfile to safely read paths with non-ASCII characters on Windows
+            image = cv2.imdecode(np.fromfile(str(image_path), np.uint8), cv2.IMREAD_COLOR)
             if image is None:
                 print(f"[warn] cannot read: {image_path}")
                 continue

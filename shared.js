@@ -133,6 +133,85 @@
     }));
   }
 
+  function mapDatabasePerson(row) {
+    const id = String(row.case_code || row.id || "").trim();
+    const name = String(row.full_name || id || "Unknown");
+    const lastSeen = row.last_seen_text || "";
+    return {
+      id,
+      dbId: null,
+      name,
+      age: row.age || "",
+      priority: row.priority || "medium",
+      lastSeen,
+      reporterContact: "",
+      note: row.note || "",
+      initials: row.initials || initials(name),
+      photo: "",
+      status: row.status || "searching",
+      vector: Array.isArray(row.face_embedding) ? row.face_embedding : vectorFromText(`${id}-${name}-${lastSeen}`),
+      createdAt: row.created_at || new Date().toISOString(),
+      foundAt: row.found_at || "",
+      foundLat: row.found_latitude || "",
+      foundLng: row.found_longitude || ""
+    };
+  }
+
+  function mergeDatabasePeople(databasePeople, localPeople) {
+    const localById = new Map((localPeople || []).map((person) => [person.id, person]));
+    return databasePeople.map((person) => {
+      const local = localById.get(person.id);
+      if (!local) return person;
+      const localFound = local.status === "found" && person.status !== "found";
+      return {
+        ...person,
+        photo: local.photo || person.photo,
+        vector: Array.isArray(person.vector) ? person.vector : local.vector,
+        status: localFound ? local.status : person.status,
+        foundAt: localFound ? local.foundAt : person.foundAt,
+        foundLat: localFound ? local.foundLat : person.foundLat,
+        foundLng: localFound ? local.foundLng : person.foundLng
+      };
+    });
+  }
+
+  async function loadPeopleFromDatabase() {
+    const config = window.HatyaiRescueConfig || {};
+    const localSupabaseUrl = localStorage.getItem("hatyai-supabase-url") || "";
+    const localSupabaseKey = localStorage.getItem("hatyai-supabase-publishable-key") || "";
+    const supabaseUrl = String(config.supabaseUrl || localSupabaseUrl).replace(/\/+$/, "");
+    const key = String(config.supabasePublishableKey || localSupabaseKey);
+    if (!supabaseUrl || !key) {
+      return loadPeople();
+    }
+
+    const url = new URL(`${supabaseUrl}/rest/v1/missing_persons`);
+    url.searchParams.set("select", "case_code,full_name,age,priority,status,last_seen_text,note,initials,found_at,found_latitude,found_longitude,created_at,updated_at");
+    url.searchParams.set("status", "in.(searching,review,found)");
+    url.searchParams.set("order", "created_at.desc");
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        Accept: "application/json"
+      },
+      cache: "no-store"
+    });
+    if (!response.ok) {
+      throw new Error(`supabase_people_${response.status}`);
+    }
+
+    const rows = await response.json();
+    const databasePeople = Array.isArray(rows) ? rows.map(mapDatabasePerson).filter((person) => person.id) : [];
+    if (!databasePeople.length) {
+      return loadPeople();
+    }
+
+    const people = mergeDatabasePeople(databasePeople, loadPeople());
+    savePeople(people);
+    return people;
+  }
   function loadPeople() {
     try {
       const people = JSON.parse(localStorage.getItem(peopleKey));
@@ -268,6 +347,7 @@
     vectorFromCanvas,
     vectorFromImageSource,
     loadPeople,
+    loadPeopleFromDatabase,
     savePeople,
     loadLogs,
     saveLogs,

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Run real-time face matching with a trained OpenCV SFace database.
+Run real-time multi-face matching with a trained FaceNet database.
 
-This script is the bridge from trained Python AI into the web UI:
-  camera -> YuNet/SFace -> POST /api/pi/matches -> drone.html/admin.html
+This script bridges Python AI into the web UI:
+  camera -> MTCNN/FaceNet -> POST /api/pi/matches -> drone/index.html
 """
 
 from __future__ import annotations
@@ -14,18 +14,18 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Tuple
 
 import cv2
 
-from face_ai_common import (
-    create_sface_recognizer,
-    create_yunet_detector,
-    detect_faces,
-    ensure_opencv_face_models,
-    extract_sface_feature,
-    load_sface_database,
-    match_sface_feature,
+from facenet_ai_common import (
+    FACENET_SIMILARITY_THRESHOLD,
+    create_facenet_models,
+    detect_facenet_faces,
+    image_from_bgr,
+    load_facenet_database,
+    match_facenet_feature,
+    select_device,
 )
 
 
@@ -35,7 +35,8 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "frame_height": 720,
     "scan_interval_seconds": 0.6,
     "match_threshold_percent": 60,
-    "detection_threshold": 0.18,
+    "facenet_similarity_threshold": FACENET_SIMILARITY_THRESHOLD,
+    "min_face_size": 40,
     "server_url": "http://127.0.0.1:4173/api/pi/matches",
     "gps": {
         "mode": "fixed",
@@ -72,7 +73,7 @@ def post_json(url: str, payload: Dict[str, Any]) -> None:
         with urllib.request.urlopen(request, timeout=2.5) as response:
             response.read()
     except (urllib.error.URLError, TimeoutError) as exc:
-        print(f"[warn] cannot post match: {exc}")
+        print(f"[warn] cannot post FaceNet match: {exc}")
 
 
 def append_jsonl(path: Path, payload: Dict[str, Any]) -> None:
@@ -81,7 +82,7 @@ def append_jsonl(path: Path, payload: Dict[str, Any]) -> None:
         handle.write(json.dumps(payload, ensure_ascii=False) + "\n")
 
 
-def draw_preview(frame, face_events, threshold: float) -> None:
+def draw_preview(frame, face_events: List[Dict[str, Any]], threshold: float) -> None:
     for face_event in face_events:
         left, top, width, height = [int(value) for value in face_event["bbox"]]
         color = (46, 220, 255) if face_event["score"] < threshold else (80, 230, 120)
@@ -90,30 +91,39 @@ def draw_preview(frame, face_events, threshold: float) -> None:
         cv2.putText(frame, text, (left, max(20, top - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
 
 
-def build_face_events(detections, recognizer, frame, database, threshold: float, lat: float, lng: float):
-    frame_height, frame_width = frame.shape[:2]
-    face_events = []
-    for face_index, detection in enumerate(detections, start=1):
-        feature = extract_sface_feature(recognizer, frame, detection.face)
-        match = match_sface_feature(feature, database)
+def build_face_events(
+    faces,
+    database,
+    similarity_threshold: float,
+    match_threshold_percent: float,
+    lat: float,
+    lng: float,
+    frame_width: int,
+    frame_height: int,
+) -> List[Dict[str, Any]]:
+    face_events: List[Dict[str, Any]] = []
+    for face_index, face in enumerate(faces, start=1):
+        match = match_facenet_feature(face.embedding, database, threshold=similarity_threshold)
         if not match:
             continue
+        is_match = match["score"] >= match_threshold_percent
         face_events.append(
             {
                 "face_index": face_index,
                 "person_id": match["person_id"],
                 "score": match["score"],
-                "threshold": threshold,
-                "is_match": match["score"] >= threshold,
-                "method": match["method"],
-                "cosine": match["cosine"],
-                "detector": f"YuNet {detection.pass_name}",
-                "detection_confidence": round(float(detection.score), 4),
+                "threshold": match_threshold_percent,
+                "similarity_threshold": similarity_threshold,
+                "is_match": is_match,
+                "method": "facenet_pytorch",
+                "similarity": match["similarity"],
+                "detector": f"MTCNN face {face_index}",
+                "detection_confidence": round(face.detection_confidence, 4),
                 "lat": lat,
                 "lng": lng,
-                "bbox": list(detection.bbox),
-                "frame_width": int(frame_width),
-                "frame_height": int(frame_height),
+                "bbox": list(face.bbox),
+                "frame_width": frame_width,
+                "frame_height": frame_height,
             }
         )
     return face_events
@@ -122,10 +132,9 @@ def build_face_events(detections, recognizer, frame, database, threshold: float,
 def run(args: argparse.Namespace) -> None:
     config = load_config(args.config)
     model_dir = Path(args.model_dir).resolve()
-    yunet_path, sface_path = ensure_opencv_face_models(model_dir / "opencv_zoo")
-    detector = create_yunet_detector(yunet_path, score_threshold=float(config["detection_threshold"]))
-    recognizer = create_sface_recognizer(sface_path)
-    database = load_sface_database(model_dir)
+    device = select_device(args.device)
+    detector, embedder = create_facenet_models(device, min_face_size=int(config["min_face_size"]))
+    database = load_facenet_database(model_dir)
 
     capture = cv2.VideoCapture(int(config["camera_index"]))
     capture.set(cv2.CAP_PROP_FRAME_WIDTH, int(config["frame_width"]))
@@ -133,12 +142,13 @@ def run(args: argparse.Namespace) -> None:
     if not capture.isOpened():
         raise RuntimeError("Cannot open camera. Check camera_index/cable/permission.")
 
-    threshold = float(config["match_threshold_percent"])
+    match_threshold = float(config["match_threshold_percent"])
+    similarity_threshold = float(config.get("facenet_similarity_threshold", FACENET_SIMILARITY_THRESHOLD))
     interval = float(config["scan_interval_seconds"])
     last_sent: Dict[str, float] = {}
     log_path = Path(args.log)
 
-    print(f"SFace scanner started people={len(database)} threshold={threshold}%")
+    print(f"FaceNet scanner started people={len(database)} threshold={match_threshold}% device={device}")
     print(f"Posting matches to: {config.get('server_url') or '(disabled)'}")
 
     try:
@@ -149,20 +159,31 @@ def run(args: argparse.Namespace) -> None:
                 time.sleep(interval)
                 continue
 
-            detections = detect_faces(detector, frame)
-            if not detections:
+            image = image_from_bgr(frame)
+            faces = detect_facenet_faces(detector, embedder, image, device)
+            if not faces:
                 print("no face")
                 if args.preview:
-                    cv2.imshow("Hatyai SFace scanner", frame)
+                    cv2.imshow("Hatyai FaceNet scanner", frame)
                     if cv2.waitKey(1) & 0xFF == ord("q"):
                         break
                 time.sleep(interval)
                 continue
 
             lat, lng = get_gps(config)
-            face_events = build_face_events(detections, recognizer, frame, database, threshold, lat, lng)
+            frame_height, frame_width = frame.shape[:2]
+            face_events = build_face_events(
+                faces,
+                database,
+                similarity_threshold,
+                match_threshold,
+                lat,
+                lng,
+                frame_width,
+                frame_height,
+            )
             if not face_events:
-                print(f"faces={len(detections)} no match")
+                print(f"faces={len(faces)} no database match")
                 time.sleep(interval)
                 continue
 
@@ -172,33 +193,35 @@ def run(args: argparse.Namespace) -> None:
                 "device_id": args.device_id,
                 "person_id": best["person_id"],
                 "score": best["score"],
-                "threshold": threshold,
+                "threshold": match_threshold,
                 "is_match": any(item["is_match"] for item in face_events),
-                "method": "opencv_sface",
-                "cosine": best["cosine"],
-                "detector": "YuNet multi-face",
+                "method": "facenet_pytorch",
+                "similarity": best["similarity"],
+                "detector": "MTCNN multi-face",
                 "lat": lat,
                 "lng": lng,
                 "bbox": best["bbox"],
-                "frame_width": int(frame.shape[1]),
-                "frame_height": int(frame.shape[0]),
+                "frame_width": frame_width,
+                "frame_height": frame_height,
                 "faces": face_events,
             }
+            append_jsonl(log_path, payload)
+
             summary = ", ".join(
                 f"face{item['face_index']}={item['person_id']} {item['score']}%" for item in face_events
             )
             print(f"faces={len(face_events)} best={best['person_id']} {best['score']}% matches=[{summary}]")
-            append_jsonl(log_path, payload)
 
             now = time.time()
-            recent_key = "|".join(sorted(item["person_id"] for item in face_events if item["is_match"]))
-            if payload["is_match"] and now - last_sent.get(recent_key, 0) > args.resend_seconds:
+            should_post = args.post_candidates or payload["is_match"]
+            recent_key = "|".join(sorted(item["person_id"] for item in face_events if item["is_match"])) or "candidate"
+            if should_post and now - last_sent.get(recent_key, 0) > args.resend_seconds:
                 post_json(config.get("server_url", ""), payload)
                 last_sent[recent_key] = now
 
             if args.preview:
-                draw_preview(frame, face_events, threshold)
-                cv2.imshow("Hatyai SFace scanner", frame)
+                draw_preview(frame, face_events, match_threshold)
+                cv2.imshow("Hatyai FaceNet scanner", frame)
                 if cv2.waitKey(1) & 0xFF == ord("q"):
                     break
 
@@ -213,9 +236,11 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.json")
     parser.add_argument("--model-dir", default="models")
-    parser.add_argument("--log", default="logs/sface_matches.jsonl")
+    parser.add_argument("--log", default="logs/facenet_matches.jsonl")
     parser.add_argument("--device-id", default="HY-PI-DRONE-01")
+    parser.add_argument("--device", choices=["auto", "cpu", "cuda"], default="auto")
     parser.add_argument("--resend-seconds", type=float, default=20)
+    parser.add_argument("--post-candidates", action="store_true")
     parser.add_argument("--preview", action="store_true")
     args = parser.parse_args()
     run(args)

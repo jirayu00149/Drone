@@ -4,6 +4,13 @@ This folder is the real AI path for the drone page.
 
 It uses OpenCV YuNet for face detection and OpenCV SFace for face recognition.
 The browser page only displays results. The trained Python AI decides the match.
+The SFace scanner sends every detected face in `faces[]`, so multiple people in
+one camera frame can be drawn and reviewed together.
+
+There is also an optional FaceNet path using MTCNN + InceptionResnetV1
+(`facenet-pytorch`). This path supports multiple faces in one frame and sends
+the original AI bounding boxes to the drone page through the same
+`/api/pi/matches` endpoint.
 
 It also supports the trained VisDrone YOLO model for drone-person detection:
 
@@ -28,6 +35,12 @@ pip install -r requirements-pi.txt
 cp config.example.json config.json
 ```
 
+Optional FaceNet install:
+
+```bash
+pip install -r requirements-facenet.txt
+```
+
 On Windows for testing, use:
 
 ```powershell
@@ -39,9 +52,29 @@ pip install -r requirements-pi.txt
 copy config.example.json config.json
 ```
 
-## Prepare training photos
+Optional FaceNet install on Windows:
 
-Put photos in this layout:
+```powershell
+pip install -r requirements-facenet.txt
+```
+
+## Prepare training photos (Auto-collect from YOLO)
+
+You can automatically collect face images using the YOLO person detector. This script finds people, crops them, and checks if a face is visible before saving.
+
+```bash
+python scripts/collect_faces_from_yolo.py --person-id HY-001 --camera-index 0
+```
+
+- Press **'s'** to save a single face.
+- Press **'a'** to toggle **AUTO-SAVE** (saves every 0.5s when a face is found).
+- Press **'q'** to quit.
+
+Images will be saved to `data/faces/HY-001/`.
+
+## Manual training layout
+
+If you already have photos, put them in this layout:
 
 ```text
 data/faces/
@@ -92,6 +125,41 @@ http://127.0.0.1:4173/api/pi/matches
 ```
 
 The drone page polls this endpoint and updates the missing person status to found.
+
+## Train and run FaceNet multi-face scanner
+
+FaceNet uses the same training photo layout:
+
+```bash
+python scripts/train_facenet_model.py --dataset data/faces --output models
+```
+
+The command creates:
+
+```text
+models/facenet_embeddings.npz
+models/facenet_meta.json
+models/web_facenet_db.json
+```
+
+Run the scanner:
+
+```bash
+python scripts/facenet_rescue_scanner.py --config config.json --model-dir models --preview
+```
+
+The scanner detects every face found by MTCNN in the frame, compares each face
+against the FaceNet database, and posts one event containing `faces[]`. The drone
+page draws each box from the original AI bbox with a simple detector-style
+rectangle, without applying the browser-side compact face box transform.
+
+On this Windows machine, use the ready venv from the trained model project:
+
+```powershell
+cd C:\Users\Administrator\OneDrive\เดสก์ท็อป\drone2\hardware\raspberry-pi
+.\train_facenet_model.ps1
+.\run_facenet_scanner.ps1
+```
 
 ## Run YOLO drone-person detector
 
