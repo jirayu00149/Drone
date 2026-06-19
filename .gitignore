@@ -6,6 +6,8 @@ node_modules/
 .supabase/
 dist/
 dist-drone/
+hardware/raspberry-pi/models/
+hardware/raspberry-pi/data/
 
 *.local
 *.tmp

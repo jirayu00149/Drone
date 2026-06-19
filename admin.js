@@ -1119,9 +1119,19 @@
     }
   }
 
+  function hasDatabaseConfig() {
+    try {
+      return Boolean(
+        (config.supabaseUrl && config.supabasePublishableKey) ||
+          (window.localStorage.getItem("hatyai-supabase-url") && window.localStorage.getItem("hatyai-supabase-publishable-key"))
+      );
+    } catch {
+      return Boolean(config.supabaseUrl && config.supabasePublishableKey);
+    }
+  }
+
   async function refreshPeopleFromDatabase(options = {}) {
-    const hasSupabaseConfig = Boolean(config.supabaseUrl && config.supabasePublishableKey);
-    if (!hasSupabaseConfig || typeof R.loadPeopleFromDatabase !== "function") return false;
+    if (!hasDatabaseConfig() || typeof R.loadPeopleFromDatabase !== "function") return false;
 
     try {
       const people = await R.loadPeopleFromDatabase();
