@@ -1,0 +1,104 @@
+﻿<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>วัดระดับน้ำท่วมด้วย YOLO | โดรนพิทักษ์น้ำท่วม</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body data-page="water-level">
+    <header class="topbar">
+      <a class="brand" href="./index.html" aria-label="โดรนพิทักษ์น้ำท่วม">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>
+          <strong>โดรนพิทักษ์น้ำท่วม</strong>
+          <small>ระบบวัดระดับน้ำท่วมด้วย AI YOLO</small>
+        </span>
+      </a>
+      <nav class="nav-actions" aria-label="เมนูหลัก">
+        <a class="nav-link" href="./index.html">หน้าแรก</a>
+        <a class="nav-link" href="./search.html">ตรวจรายชื่อ</a>
+        <a class="nav-link" href="./report.html">แจ้งข้อมูล</a>
+        <a class="nav-link active" href="./water-level.html">วัดระดับน้ำ</a>
+        <a class="nav-link nav-link-ops" href="./drone/">ห้องโดรน</a>
+      </nav>
+    </header>
+
+    <main class="page-shell water-page-shell">
+      <section class="intro-panel water-intro" aria-labelledby="waterLevelTitle">
+        <div>
+          <span class="eyebrow red">YOLO flood-level AI</span>
+          <h1 id="waterLevelTitle">วัดระดับน้ำท่วม</h1>
+          <p>หน้าแยกสำหรับรับผลจากโมเดล YOLO ตรวจจับแนวน้ำ แล้วแปลงเป็นเซนติเมตรตามค่าคาลิเบรตของจุดวัด เช่น เสา กำแพง หรือสเกลระดับน้ำในภาพ</p>
+        </div>
+        <span class="status-chip" id="waterConnectionStatus">รอข้อมูล YOLO</span>
+      </section>
+
+      <section class="water-layout" aria-label="แผงวัดระดับน้ำท่วม">
+        <article class="panel water-gauge-panel">
+          <div class="panel-header">
+            <div>
+              <h2>ระดับน้ำล่าสุด</h2>
+              <p id="waterUpdatedAt">ยังไม่มีข้อมูลจากภาคสนาม</p>
+            </div>
+            <span class="status-chip" id="waterSeverity">UNKNOWN</span>
+          </div>
+
+          <div class="water-metric-grid" aria-live="polite">
+            <div class="water-metric"><span>ระดับน้ำ</span><strong id="waterLevelCm">-- cm</strong></div>
+            <div class="water-metric"><span>สัดส่วนสเกล</span><strong id="waterLevelPercent">--%</strong></div>
+            <div class="water-metric"><span>ความมั่นใจ</span><strong id="waterConfidence">--%</strong></div>
+          </div>
+
+          <div class="water-gauge" aria-hidden="true">
+            <div class="water-gauge-fill" id="waterGaugeFill"></div>
+            <div class="water-gauge-line" id="waterGaugeLine"></div>
+            <div class="water-gauge-label" id="waterGaugeLabel">รอ YOLO</div>
+            <div class="water-gauge-scale"><span>สูง</span><span>กลาง</span><span>ต่ำ</span></div>
+          </div>
+        </article>
+
+        <article class="panel water-control-panel">
+          <div class="panel-header compact-header">
+            <div>
+              <h2>แหล่งข้อมูล YOLO</h2>
+              <p>ตั้ง endpoint จากเครื่องที่รัน server หรือ Raspberry Pi แล้วหน้านี้จะ poll ค่าล่าสุดให้อัตโนมัติ</p>
+            </div>
+          </div>
+          <div class="water-control-body">
+            <label class="search-box water-endpoint-box">
+              <span>Water-level API endpoint</span>
+              <input id="waterEndpointInput" autocomplete="off" placeholder="http://127.0.0.1:4173/api/yolo/water-level" />
+            </label>
+            <div class="water-endpoint-actions">
+              <button class="primary-button" id="saveWaterEndpointBtn" type="button">บันทึก endpoint</button>
+              <button class="secondary-button" id="demoWaterEventBtn" type="button">ทดสอบตัวอย่าง</button>
+            </div>
+            <div class="water-help-card">
+              <strong>วิธีใช้กับ YOLO</strong>
+              <span>รันสคริปต์บน Pi/เครื่องกล้องให้ส่งผลไปที่ <code>/api/yolo/water-level</code> แล้วเปิดหน้านี้เพื่อดูค่าระดับน้ำแบบเรียลไทม์</span>
+            </div>
+            <div class="water-detection-list" id="waterDetectionList" aria-live="polite"></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel water-event-panel" aria-labelledby="waterRawTitle">
+        <div class="panel-header compact-header">
+          <div><h2 id="waterRawTitle">ข้อมูลล่าสุดจาก AI</h2><p>ใช้สำหรับตรวจสอบ payload ที่ YOLO ส่งเข้ามา</p></div>
+        </div>
+        <pre id="waterRawEvent" class="water-raw-event">ยังไม่มีข้อมูล</pre>
+      </section>
+    </main>
+
+    <footer class="footer-note">
+      <span>ควรคาลิเบรตหน้างาน</span>
+      <span>ค่าระดับน้ำจาก AI เป็นตัวช่วยเฝ้าระวัง และควรเทียบกับจุดวัดจริงก่อนใช้ตัดสินใจภาคสนาม</span>
+    </footer>
+
+    <script src="./site-config.js"></script>
+    <script src="./shared.js"></script>
+    <script src="./tubelight-nav.js"></script>
+    <script src="./water-level.js"></script>
+  </body>
+</html>

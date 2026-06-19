@@ -17,9 +17,11 @@ const sharedPublicEntries = [
   "index.html",
   "search.html",
   "report.html",
+  "water-level.html",
   "styles.css",
   "shared.js",
   "public.js",
+  "water-level.js",
   "tubelight-nav.js",
   "assets"
 ];
@@ -80,6 +82,7 @@ function configJs() {
     supabasePublishableKey: process.env.SUPABASE_PUBLISHABLE_KEY || "",
     droneTelemetryWs: process.env.DRONE_TELEMETRY_WS || "",
     droneVideoUrl: process.env.DRONE_VIDEO_URL || "",
+    waterLevelUrl: process.env.WATER_LEVEL_URL || "",
     autoStartCamera: process.env.DRONE_AUTO_START_CAMERA !== "false",
     droneAccessHash: process.env.DRONE_ACCESS_HASH || sha256(droneAccessCode)
   };

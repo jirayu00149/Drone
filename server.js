@@ -8,6 +8,7 @@ const host = process.env.HOST || "0.0.0.0";
 const port = Number(process.env.PORT) || 4173;
 const piMatchesPath = path.join(root, "exports", "pi-matches.jsonl");
 const yoloDetections = [];
+const waterLevelEvents = [];
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -48,6 +49,19 @@ function readRequestBody(request) {
     request.on("end", () => resolve(body));
     request.on("error", reject);
   });
+}
+
+function numberOrNull(value, fallback = null) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function waterSeverity(levelCm, alertCm = 80, criticalCm = 120) {
+  if (!Number.isFinite(Number(levelCm))) return "unknown";
+  if (levelCm >= criticalCm) return "critical";
+  if (levelCm >= alertCm) return "warning";
+  if (levelCm > 0) return "watch";
+  return "normal";
 }
 
 function readPiMatches() {
@@ -155,6 +169,60 @@ async function handleYoloDetections(request, response) {
   }
 }
 
+async function handleYoloWaterLevel(request, response) {
+  if (request.method === "OPTIONS") {
+    sendJson(response, 200, { ok: true });
+    return;
+  }
+
+  if (request.method === "GET") {
+    const events = waterLevelEvents.slice(-120);
+    sendJson(response, 200, { events, latest: events.at(-1) || null });
+    return;
+  }
+
+  if (request.method !== "POST") {
+    sendJson(response, 405, { error: "method_not_allowed" });
+    return;
+  }
+
+  try {
+    const payload = JSON.parse((await readRequestBody(request)) || "{}");
+    const levelCm = numberOrNull(payload.level_cm ?? payload.water_level_cm ?? payload.levelCm);
+    const levelPercent = numberOrNull(payload.level_percent ?? payload.levelPercent);
+    const alertCm = numberOrNull(payload.alert_cm ?? payload.alertCm, 80);
+    const criticalCm = numberOrNull(payload.critical_cm ?? payload.criticalCm, 120);
+    const event = {
+      id: payload.id || `WATER-1781863930268-ce103055d48a4`,
+      created_at: payload.created_at || new Date().toISOString(),
+      device_id: payload.device_id || "HY-WATER-01",
+      method: payload.method || "ultralytics-yolo-water-level",
+      model_path: payload.model_path || "",
+      conf: numberOrNull(payload.conf, 0.25),
+      imgsz: numberOrNull(payload.imgsz, 640),
+      frame_width: numberOrNull(payload.frame_width || payload.frameWidth),
+      frame_height: numberOrNull(payload.frame_height || payload.frameHeight),
+      waterline_y: numberOrNull(payload.waterline_y ?? payload.waterlineY),
+      level_cm: levelCm,
+      level_percent: levelPercent,
+      reference_height_cm: numberOrNull(payload.reference_height_cm ?? payload.referenceHeightCm, 200),
+      alert_cm: alertCm,
+      critical_cm: criticalCm,
+      severity: String(payload.severity || waterSeverity(levelCm, alertCm, criticalCm)),
+      confidence: numberOrNull(payload.confidence ?? payload.score, 0),
+      detections: Array.isArray(payload.detections) ? payload.detections : []
+    };
+
+    waterLevelEvents.push(event);
+    if (waterLevelEvents.length > 240) {
+      waterLevelEvents.splice(0, waterLevelEvents.length - 240);
+    }
+    sendJson(response, 200, { ok: true, event });
+  } catch (error) {
+    sendJson(response, 400, { error: "invalid_water_level_event", detail: String(error.message || error) });
+  }
+}
+
 function createServer() {
   return http.createServer(async (request, response) => {
     const requestUrl = new URL(request.url, `http://${request.headers.host || "127.0.0.1"}`);
@@ -165,6 +233,11 @@ function createServer() {
 
     if (requestUrl.pathname === "/api/yolo/detections") {
       await handleYoloDetections(request, response);
+      return;
+    }
+
+    if (requestUrl.pathname === "/api/yolo/water-level") {
+      await handleYoloWaterLevel(request, response);
       return;
     }
 

@@ -12,3 +12,6 @@ hardware/raspberry-pi/data/
 *.local
 *.tmp
 *.log
+
+__pycache__/
+*.pyc

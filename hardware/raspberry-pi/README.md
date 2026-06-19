@@ -198,3 +198,40 @@ python scripts/yolo_drone_person_detector.py \
 ```
 
 The drone page draws the raw YOLO bounding boxes from `/api/yolo/detections`.
+
+## Run YOLO flood-water level detector
+
+This is separate from the drone control page. It uses an Ultralytics YOLO water/flood model to detect the water region or waterline, converts the detected line to centimeters using a simple image calibration, then posts events to:
+
+```text
+/api/yolo/water-level
+```
+
+Example config values:
+
+```json
+{
+  "water_yolo_model_path": "models/flood_water_level.pt",
+  "water_reference_height_cm": 200,
+  "water_reference_top_y": 80,
+  "water_reference_bottom_y": 460,
+  "water_alert_cm": 80,
+  "water_critical_cm": 120
+}
+```
+
+Run:
+
+```bash
+cd hardware/raspberry-pi
+python scripts/yolo_water_level_detector.py --config config.json --preview
+```
+
+On this Windows machine:
+
+```powershell
+cd C:\Users\Administrator\OneDrive\เดสก์ท็อป\drone2\hardware\raspberry-pi
+.\run_water_level_detector.ps1
+```
+
+Open `water-level.html` on the public site and set the endpoint to `http://127.0.0.1:4173/api/yolo/water-level` or the Pi/server IP.
